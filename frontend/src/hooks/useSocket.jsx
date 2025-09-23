@@ -5,7 +5,10 @@ const useSocket = (url) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io(url);
+    const newSocket = io(url, {
+  transports: ['websocket'], 
+  withCredentials: true
+});
     setSocket(newSocket);
 
     return () => {

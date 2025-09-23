@@ -3,13 +3,15 @@ import {
   WebSocketServer,
   SubscribeMessage,
   OnGatewayConnection,
-  OnGatewayDisconnect,
+  OnGatewayDisconnect,  
+  MessageBody,
+  ConnectedSocket 
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'http://192.168.137.154:3000/',
   },
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -28,8 +30,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // 'message' 이벤트를 받으면 실행
   @SubscribeMessage('message')
-  handleMessage(client: Socket, payload: string): void {
+    // @MessageBody()와 @ConnectedSocket() 데코레이터를 추가합니다.
+    handleMessage(
+      @MessageBody() payload: string,
+      @ConnectedSocket() client: Socket,
+    ): void {
     console.log(`Received message from ${client.id}: ${payload}`);
-    this.server.emit('message', payload); // 모든 클라이언트에게 메시지 브로드캐스트
+
   }
 }
+

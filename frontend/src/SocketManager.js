@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useSetRecoilState } from 'recoil';
+
 import useSocket from './hooks/useSocket';
 import { socketState, messageState } from './atoms';
 
