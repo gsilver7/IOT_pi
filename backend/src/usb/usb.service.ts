@@ -1,31 +1,48 @@
-const usb = require('usb');
+// src/usb/usb.service.ts
 
-// 모든 USB 장치 목록 가져오기
-const devices = usb.getDeviceList();
+import { Injectable, Logger } from '@nestjs/common';
+import * as usb from 'usb';
 
-if (devices.length === 0) {
-  console.log('USB 장치를 찾을 수 없습니다.');
-} else {
-  // 특정 장치 찾기 (예: Vendor ID와 Product ID 사용)
-  const myDevice = usb.findByIds(0x1234, 0x5678); // 예시 ID
-  
-  if (myDevice) {
-    console.log('USB 장치 발견:', myDevice.deviceDescriptor);
-    
-    // 장치 열기
-    try {
-      myDevice.open();
-      
-      // 장치와 통신하는 로직 (데이터 전송, 수신 등)
-      // 이 부분은 장치의 종류에 따라 달라집니다.
-      
-      myDevice.close();
-      console.log('장치가 성공적으로 닫혔습니다.');
-    } catch (e) {
-      console.error('장치를 열거나 통신하는 중 오류 발생:', e);
+@Injectable()
+export class UsbService {
+  private readonly logger = new Logger(UsbService.name);
+
+  // 예시: 벤더 ID(VID)와 제품 ID(PID)로 장치 찾기
+  // 이 값은 실제 USB 장치의 ID로 바꿔주세요.
+  private readonly VENDOR_ID = 0x1234; // 예시 VID
+  private readonly PRODUCT_ID = 0x5678; // 예시 PID
+
+  constructor() {
+    this.logger.log('USB Service 초기화');
+  }
+
+  findAllDevices(): usb.Device[] {
+    return usb.getDeviceList();
+  }
+
+  findSpecificDevice(): usb.Device | null {
+    const device = usb.findByIds(this.VENDOR_ID, this.PRODUCT_ID);
+    if (!device) {
+      this.logger.warn(`USB 장치를 찾을 수 없습니다: VID=${this.VENDOR_ID}, PID=${this.PRODUCT_ID}`);
+      return null;
     }
-    
-  } else {
-    console.log('지정된 USB 장치를 찾을 수 없습니다.');
+    this.logger.log(`USB 장치를 찾았습니다: ${device.deviceDescriptor.iProduct}`);
+    return device;
+  }
+
+  connectDevice(): void {
+    const device = this.findSpecificDevice();
+    if (device) {
+      try {
+        device.open();
+        this.logger.log('USB 장치에 성공적으로 연결되었습니다.');
+        // 추가적인 통신 로직을 여기에 구현할 수 있습니다.
+        // 예: device.interfaces[0].claim();
+        // device.interfaces[0].endpoints[0].transfer(data, callback);
+        device.close(); // 예시이므로 바로 연결을 닫습니다.
+      } catch (error) {
+        this.logger.error('USB 장치 연결 실패:', error);
+      }
+    }
   }
 }

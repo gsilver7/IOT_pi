@@ -1,6 +1,4 @@
 // App.js
-import { RecoilRoot } from 'recoil';
-import SocketManager from './SocketManager';
 import useSocket from './hooks/useSocket';
 import { useEffect, useState } from 'react';
 
@@ -54,7 +52,7 @@ function App() {
   //'message'
 
   return (
-    <RecoilRoot>
+
       <div>
         <h1>front end</h1>
         <input 
@@ -63,7 +61,7 @@ function App() {
         onChange={(e) => setMessage(e.target.value)}/>
         <button onClick={sendMessage} style={{ height: '50px', width: '200px' }}></button>
       </div>
-    </RecoilRoot>
+
   );
 }
 
