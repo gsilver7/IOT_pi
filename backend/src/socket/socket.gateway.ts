@@ -10,8 +10,9 @@ import {
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
-  cors: {
+  cors: {namespace: 'chat',
     origin: 'http://192.168.137.154:3000/',
+    methods: ['GET', 'POST'],
   },
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
