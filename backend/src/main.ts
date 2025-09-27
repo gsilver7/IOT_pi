@@ -15,6 +15,8 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(4000, '0.0.0.0');
+    await app.listen(4000);
+    console.log('서버가 4000번 포트에서 실행 중입니다.');
+    console.log('Socket.IO endpoint: http://192.168.137.154:4000/socket.io/');
 }
 bootstrap();
