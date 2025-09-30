@@ -5,13 +5,23 @@ import { EventsModule } from './socket/socket.module';
 import { UsbModule } from './usb/usb.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import {StreamModule} from './stream/stream.module';
+import {PythonModule} from './python/python.module';
+import { ConfigModule } from '@nestjs/config';
+
+const mongourl = process.env.MONGOURL
 
 
-const mongourl = 'mongodb+srv://chatKMJ:rlaaudwns7@chatkmj.ezcjvwv.mongodb.net/?retryWrites=true&w=majority&appName=chatKMJ'
 
 @Module({
-  imports: [EventsModule, UsbModule,StreamModule,MongooseModule.forRoot(mongourl),],
+  imports: [PythonModule,EventsModule, UsbModule,StreamModule,
+     ConfigModule.forRoot({
+      isGlobal: true, // 전역으로 사용
+      envFilePath: '.env', // .env 파일 경로
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+
+// MongooseModule.forRoot(mongourl),

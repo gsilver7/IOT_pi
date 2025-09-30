@@ -13,6 +13,7 @@ const io = new Server(server, {
 });
 
 const PORT = 4000;
+const url = "http://192.168.137.154";
 
 // 정적 파일 제공
 app.use(express.static('public'));
@@ -35,7 +36,7 @@ app.get('/stream', (req, res) => {
     .videoCodec('mjpeg')
     .outputOptions([
       '-f', 'mjpeg',
-      '-q:v', '3',  // 품질 설정 (1=최고, 5=보통)
+      '-q:v', '5',  // 품질 설정 (1=최고, 5=보통)
       '-huffman', 'optimal'
     ]);
 
@@ -161,7 +162,7 @@ app.get('/', (req, res) => {
             </div>
             <img src="/stream" alt="Live Stream" id="streamImg" />
             <div style="margin-top: 15px; font-size: 14px; color: #666;">
-                <p><strong>스트림 URL:</strong> <code>http://localhost:${PORT}/stream</code></p>
+                <p><strong>스트림 URL:</strong> <code>${url}:${PORT}/stream</code></p>
                 <p><strong>해상도:</strong> 640x480 @ 15fps</p>
                 <p><strong>포맷:</strong> MJPEG over HTTP</p>
             </div>
@@ -215,9 +216,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT,'0.0.0.0' ,() => {
   console.log(`🚀 MJPEG Streaming Server running on port ${PORT}`);
-  console.log(`📺 Stream URL: http://localhost:${PORT}/stream`);
-  console.log(`🌐 Test page: http://localhost:${PORT}/`);
+  console.log(`📺 Stream URL: ${url}:${PORT}/stream`);
+  console.log(`🌐 Test page: ${url}:${PORT}/`);
   console.log(`💊 Health check: http://localhost:${PORT}/health`);
 });
