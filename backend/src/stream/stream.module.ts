@@ -1,11 +1,10 @@
+// src/stream/stream.module.ts
 import { Module } from '@nestjs/common';
-import { StreamController } from './stream.controller';
-import { StreamService } from './stream.service';
 import { StreamGateway } from './stream.gateway';
+import { StreamController } from './stream.controller';
 
 @Module({
+  providers: [StreamGateway],
   controllers: [StreamController],
-  providers: [StreamService, StreamGateway],
-  exports: [StreamService],
 })
 export class StreamModule {}

@@ -1,4 +1,4 @@
-// server.js - MJPEG 스트리밍 서버 (권장)
+// server.js - Socket.IO 웹캠 스트리밍 서버
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -9,216 +9,222 @@ const app = express();
 app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] }
+  cors: { origin: "*", methods: ["GET", "POST"] },
+  maxHttpBufferSize: 1e8 // 100MB 버퍼 크기
 });
 
 const PORT = 4000;
-const url = "http://192.168.137.154";
+
+// 연결된 클라이언트 관리
+let connectedClients = new Set();
+let streamCommand = null;
+let isStreaming = false;
 
 // 정적 파일 제공
 app.use(express.static('public'));
 
-// MJPEG 스트림 엔드포인트
-app.get('/stream', (req, res) => {
-  console.log('Client connected to MJPEG stream');
-  
-  res.writeHead(200, {
-    'Content-Type': 'multipart/x-mixed-replace; boundary=--myboundary',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'Access-Control-Allow-Origin': '*'
-  });
+// FFmpeg 스트림 시작 함수
+function startWebcamStream() {
+  if (isStreaming) {
+    console.log('Stream already running');
+    return;
+  }
 
-  const command = ffmpeg('/dev/video0')
+  console.log('Starting webcam stream...');
+  isStreaming = true;
+
+  streamCommand = ffmpeg('/dev/video0')
     .inputOptions(['-re', '-f', 'v4l2'])
     .size('640x480')
-    .fps(15)  // 프레임률 제한으로 부하 줄이기
+    .fps(15)
     .videoCodec('mjpeg')
     .outputOptions([
-      '-f', 'mjpeg',
-      '-q:v', '5',  // 품질 설정 (1=최고, 5=보통)
+      '-f', 'image2pipe',
+      '-vcodec', 'mjpeg',
+      '-q:v', '5',
       '-huffman', 'optimal'
     ]);
 
-  command
+  streamCommand
     .on('start', (cmdline) => {
       console.log('FFmpeg started:', cmdline);
     })
     .on('error', (err) => {
       console.error('FFmpeg error:', err.message);
-      res.end();
+      stopWebcamStream();
     })
     .on('end', () => {
       console.log('FFmpeg stream ended');
-      res.end();
+      stopWebcamStream();
     });
 
-  const stream = command.pipe();
+  const stream = streamCommand.pipe();
+  let buffer = Buffer.alloc(0);
   let frameCount = 0;
 
   stream.on('data', (chunk) => {
-    frameCount++;
-    if (frameCount % 100 === 0) {
-      console.log(`Streamed ${frameCount} frames`);
-    }
-    
-    try {
-      res.write('--myboundary\r\n');
-      res.write('Content-Type: image/jpeg\r\n');
-      res.write(`Content-Length: ${chunk.length}\r\n\r\n`);
-      res.write(chunk);
-      res.write('\r\n');
-    } catch (writeError) {
-      console.error('Write error:', writeError.message);
-      command.kill('SIGKILL');
-      res.end();
+    buffer = Buffer.concat([buffer, chunk]);
+
+    // JPEG 시작(FFD8)과 끝(FFD9) 마커 찾기
+    let startIdx = buffer.indexOf(Buffer.from([0xFF, 0xD8]));
+    let endIdx = buffer.indexOf(Buffer.from([0xFF, 0xD9]));
+
+    while (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+      // 완전한 JPEG 프레임 추출
+      const frame = buffer.slice(startIdx, endIdx + 2);
+      buffer = buffer.slice(endIdx + 2);
+
+      frameCount++;
+      
+      // 모든 연결된 클라이언트에게 프레임 전송
+      if (connectedClients.size > 0) {
+        const base64Frame = frame.toString('base64');
+        io.emit('frame', {
+          data: base64Frame,
+          timestamp: Date.now(),
+          frameNumber: frameCount
+        });
+
+        if (frameCount % 100 === 0) {
+          console.log(`Streamed ${frameCount} frames to ${connectedClients.size} client(s)`);
+        }
+      }
+
+      // 다음 프레임 찾기
+      startIdx = buffer.indexOf(Buffer.from([0xFF, 0xD8]));
+      endIdx = buffer.indexOf(Buffer.from([0xFF, 0xD9]));
     }
   });
 
   stream.on('error', (err) => {
     console.error('Stream error:', err.message);
-    res.end();
+    stopWebcamStream();
+  });
+}
+
+// FFmpeg 스트림 중지 함수
+function stopWebcamStream() {
+  if (streamCommand) {
+    console.log('Stopping webcam stream...');
+    streamCommand.kill('SIGKILL');
+    streamCommand = null;
+  }
+  isStreaming = false;
+}
+
+// Socket.IO 연결 처리
+io.on('connection', (socket) => {
+  console.log(`✅ Client connected: ${socket.id}`);
+  connectedClients.add(socket.id);
+  
+  // 첫 클라이언트 연결 시 스트림 시작
+  if (connectedClients.size === 1) {
+    startWebcamStream();
+  }
+
+  // 클라이언트에게 연결 확인 전송
+  socket.emit('connected', {
+    message: 'Connected to webcam stream',
+    clientId: socket.id,
+    timestamp: Date.now()
   });
 
-  req.on('close', () => {
-    console.log('Client disconnected from MJPEG stream');
-    command.kill('SIGKILL');
+  // 클라이언트 연결 해제 처리
+  socket.on('disconnect', () => {
+    console.log(`❌ Client disconnected: ${socket.id}`);
+    connectedClients.delete(socket.id);
+    
+    // 모든 클라이언트 연결 해제 시 스트림 중지
+    if (connectedClients.size === 0) {
+      console.log('No clients connected. Stopping stream...');
+      stopWebcamStream();
+    }
   });
 
-  req.on('error', (err) => {
-    console.error('Request error:', err.message);
-    command.kill('SIGKILL');
+  // 에러 처리
+  socket.on('error', (error) => {
+    console.error(`Socket error for ${socket.id}:`, error.message);
+    connectedClients.delete(socket.id);
   });
 });
 
 // 테스트용 HTML 페이지
 app.get('/', (req, res) => {
   res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>USB Camera Stream Test</title>
-        <style>
-            body { 
-                margin: 0; 
-                padding: 20px; 
-                font-family: Arial, sans-serif;
-                background: #f0f0f0;
-            }
-            .container {
-                max-width: 800px;
-                margin: 0 auto;
-                background: white;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            img { 
-                max-width: 100%; 
-                height: auto; 
-                border: 2px solid #333;
-                border-radius: 8px;
-                background: #000;
-            }
-            .status {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                margin-bottom: 15px;
-            }
-            .indicator {
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                background: #4CAF50;
-                animation: pulse 2s infinite;
-            }
-            @keyframes pulse {
-                0% { opacity: 1; }
-                50% { opacity: 0.5; }
-                100% { opacity: 1; }
-            }
-            button {
-                padding: 8px 16px;
-                background: #2196F3;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                margin-left: 10px;
-            }
-            button:hover {
-                background: #1976D2;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>🎥 USB 웹캠 라이브 스트림</h1>
-            <div class="status">
-                <div class="indicator"></div>
-                <span>스트리밍 중</span>
-                <button onclick="location.reload()">새로고침</button>
-            </div>
-            <img src="/stream" alt="Live Stream" id="streamImg" />
-            <div style="margin-top: 15px; font-size: 14px; color: #666;">
-                <p><strong>스트림 URL:</strong> <code>${url}:${PORT}/stream</code></p>
-                <p><strong>해상도:</strong> 640x480 @ 15fps</p>
-                <p><strong>포맷:</strong> MJPEG over HTTP</p>
-            </div>
-        </div>
+<!DOCTYPE html>
+<html>
+<body>
+    <div class="container">
+        <canvas id="streamCanvas" width="640" height="480"></canvas>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const canvas = document.getElementById('streamCanvas');
+        const ctx = canvas.getContext('2d');
+        let socket;
         
-        <script>
-            const img = document.getElementById('streamImg');
-            const indicator = document.querySelector('.indicator');
+        function connect() {
+            // 서버에 소켓 연결을 시도합니다.
+            socket = io('/', {
+                transports: ['websocket', 'polling']
+            });
             
-            img.onload = () => {
-                indicator.style.background = '#4CAF50';
-                console.log('Stream loaded successfully');
-            };
+            // 'connect' 이벤트: 서버에 성공적으로 연결되었을 때
+            socket.on('connect', () => {
+                console.log('서버에 연결되었습니다.');
+            });
             
-            img.onerror = () => {
-                indicator.style.background = '#F44336';
-                console.error('Stream load failed');
-                setTimeout(() => {
-                    img.src = '/stream?t=' + Date.now();
-                }, 5000);
-            };
-        </script>
-    </body>
-    </html>
+            // 'frame' 이벤트: 서버로부터 비디오 프레임 데이터를 받았을 때
+            socket.on('frame', (data) => {
+                const img = new Image();
+                // 이미지가 로드되면 캔버스에 그립니다.
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                };
+                // 받은 base64 데이터를 이미지 소스로 설정합니다.
+                img.src = 'data:image/jpeg;base64,' + data.data;
+            });
+            
+            // 'disconnect' 이벤트: 서버와의 연결이 끊겼을 때
+            socket.on('disconnect', () => {
+                console.log('서버와의 연결이 끊겼습니다.');
+            });
+
+            // 'connect_error' 이벤트: 연결 중 오류가 발생했을 때
+            socket.on('connect_error', (error) => {
+                console.error('연결 오류:', error);
+            });
+        }
+        
+        // 페이지 로드 시 바로 연결을 시작합니다.
+        connect();
+        
+        // 페이지를 닫거나 새로고침할 때 소켓 연결을 정리합니다.
+        window.addEventListener('beforeunload', () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>
   `);
 });
 
-// WebSocket 연결 (선택사항 - 상태 모니터링용)
-io.on('connection', (socket) => {
-  console.log(`WebSocket client connected: ${socket.id}`);
-  
-  socket.emit('server_status', {
-    status: 'ready',
-    streamUrl: '/stream',
-    timestamp: Date.now()
-  });
-  
-  socket.on('disconnect', () => {
-    console.log(`WebSocket client disconnected: ${socket.id}`);
-  });
-});
-
-// 헬스체크 엔드포인트
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: Date.now(),
-    streams: {
-      mjpeg: '/stream'
-    }
-  });
-});
-
-server.listen(PORT,'0.0.0.0' ,() => {
-  console.log(`🚀 MJPEG Streaming Server running on port ${PORT}`);
-  console.log(`📺 Stream URL: ${url}:${PORT}/stream`);
-  console.log(`🌐 Test page: ${url}:${PORT}/`);
+// 서버 시작
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Socket.IO Streaming Server running on port ${PORT}`);
   console.log(`💊 Health check: http://localhost:${PORT}/health`);
+  console.log(`📺 Waiting for client connections...`);
+});
+
+// 종료 시 정리
+process.on('SIGINT', () => {
+  console.log('\nShutting down server...');
+  stopWebcamStream();
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 });

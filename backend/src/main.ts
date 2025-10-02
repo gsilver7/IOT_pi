@@ -10,12 +10,12 @@ async function bootstrap() {
   
   // CORS 설정 (프론트엔드와 통신하기 위해 필요)
   app.enableCors({
-    origin: 'http://192.168.137.154:3000/', // 프론트엔드 URL
+    origin: 'http://localhost:3000/', // 프론트엔드 URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-    await app.listen(4000, '0.0.0.0');
+    await app.listen(4000);
     console.log('서버가 4000번 포트에서 실행 중입니다.');
 }
 bootstrap();

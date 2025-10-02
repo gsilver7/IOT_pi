@@ -7,7 +7,7 @@ export class PythonController {
     PythonExecutorService) {}
     private readonly logger = new Logger(PythonController.name);
 
-  @Post('execute2')
+  @Post('execute_add')
   async executePython2(@Body() body: { args?: string[] }) {
     try {
       const result = await this.pythonExecutor.executePythonScript(body.args);
@@ -22,7 +22,7 @@ export class PythonController {
       };
     }
   }
-  @Get('execute')
+  @Get('execute') // 인자 없음
   async executePython() {
     this.logger.log('python 실행 요청 받음');
     try {

@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -7,17 +8,21 @@ import {
   MessageBody,
   ConnectedSocket 
 } from '@nestjs/websockets';
+import { interval, timestamp } from 'rxjs';
 import { Server, Socket } from 'socket.io';
+import {Interval} from '@nestjs/schedule';
 
 @WebSocketGateway({
   cors: {namespace: 'chat',
-    origin: 'http://192.168.137.154:3000/',
+    origin: 'http://192.168.186.179:3000/',
     methods: ['GET', 'POST'],
   },
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
+
+  private readonly logger = new Logger(EventsGateway.name);
 
   // 클라이언트 연결 시 실행
   handleConnection(client: Socket) {
@@ -38,6 +43,14 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     ): void {
     console.log(`Received message from ${client.id}: ${payload}`);
 
+  }
+  @Interval(10000)
+  handleInterval() {
+    const message = {
+      type: 'server-time',
+      timestamp: new Date().toISOString(),};
+    this.server.emit('server-time',message);
+    this.logger.log('서버 시간 방송');
   }
 }
 
