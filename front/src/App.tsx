@@ -2,8 +2,8 @@
 import useSocket from './hooks/useSocket';
 import { useEffect, useState } from 'react';
 import WebcamStreamClient from './components/WebcamStreamClient';
-
-const socketUrl = 'http://192.168.186.179:4000/';
+import WeatherDisplay from './components/weatherDisplay';
+const socketUrl = 'http://192.168.121.179:4000/';
 
 
 function App() {
@@ -79,9 +79,8 @@ function App() {
   return (
 
       <div>
-        <></>
-         <WebcamStreamClient/>
-        <h1>front end</h1>
+        <WebcamStreamClient/>
+        <WeatherDisplay />
         <h2>서버 시간: {serverTime}</h2>
         <input 
         type="text"

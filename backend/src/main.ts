@@ -10,7 +10,7 @@ async function bootstrap() {
   
   // CORS 설정 (프론트엔드와 통신하기 위해 필요)
   app.enableCors({
-    origin: 'http://localhost:3000/', // 프론트엔드 URL
+    origin: true, // 프론트엔드 URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

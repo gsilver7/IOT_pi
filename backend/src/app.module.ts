@@ -8,6 +8,8 @@ import {StreamModule} from './stream/stream.module';
 import {PythonModule} from './python/python.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import {ScheduleModule} from '@nestjs/schedule';
+import { HttpModule } from '@nestjs/axios';
+import { WeatherModule } from './weather/weather.module';
 
 
 
@@ -16,15 +18,18 @@ import {ScheduleModule} from '@nestjs/schedule';
       isGlobal: true, // 전역으로 사용
       envFilePath: '.env', // .env 파일 경로
     }),
+     HttpModule.register({
+      timeout: 5000, // 요청 시간 초과 5초
+    }),
     ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
-      imports: [ConfigModule], // ConfigModule을 import
+      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGOURL'), // ConfigService를 사용해 환경변수 조회
       }),
       inject: [ConfigService], // ConfigService를 주입
     }),
-    PythonModule,EventsModule, UsbModule,StreamModule,
+    PythonModule,EventsModule, UsbModule,StreamModule,WeatherModule
   ],
   controllers: [AppController],
   providers: [AppService],
