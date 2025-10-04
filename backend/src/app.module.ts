@@ -10,8 +10,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import {ScheduleModule} from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { WeatherModule } from './weather/weather.module';
-
-
+import { SerialModule } from './serial/serial.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -28,8 +28,9 @@ import { WeatherModule } from './weather/weather.module';
         uri: configService.get<string>('MONGOURL'), // ConfigService를 사용해 환경변수 조회
       }),
       inject: [ConfigService], // ConfigService를 주입
-    }),
-    PythonModule,EventsModule, UsbModule,StreamModule,WeatherModule
+    }),EventEmitterModule.forRoot({wildcard: true,
+      delimiter: '.',}),
+    PythonModule,EventsModule, UsbModule,StreamModule,WeatherModule, SerialModule
   ],
   controllers: [AppController],
   providers: [AppService],

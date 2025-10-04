@@ -19,7 +19,7 @@ export class WeatherService {
   }
 
   // 단기예보 정보를 가져오는 메서드
-  async getVilageFcst(baseDate: string, baseTime: string) {
+  async getVilageFcst(baseDate: string, baseTime: string, nxin: string, nyin: string) {
     const endpoint = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst';
     const params = {
       serviceKey: this.KMA_API_KEY,
@@ -28,8 +28,8 @@ export class WeatherService {
       dataType: 'JSON',
       base_date: baseDate,
       base_time: baseTime,
-      nx: '61',
-      ny: '127',
+      nx: nxin,
+      ny: nyin,
     };
 
     try {
@@ -57,7 +57,7 @@ export class WeatherService {
       throw error;
     }
   }
-private getApiBaseTime(): { base_date: string; base_time: string } {
+private getApiBaseTime(): { base_date: string; base_time: string;} {
   let now = new Date();
   
   // 초단기실황은 매시각 정시 10분 후에 데이터 생성
@@ -79,7 +79,7 @@ private getApiBaseTime(): { base_date: string; base_time: string } {
   
   return { base_date, base_time };
 }
-async getNowcast() {
+async getNowcast( nxin: string, nyin: string) {
   const endpoint = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst';
 
   const { base_date, base_time } = this.getApiBaseTime();
@@ -91,8 +91,8 @@ async getNowcast() {
     dataType: 'JSON',
     base_date: base_date,
     base_time: base_time,
-    nx: '61',
-    ny: '127',
+    nx: nxin,
+    ny: nyin,
   };
 
   try {

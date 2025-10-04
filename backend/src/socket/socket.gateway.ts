@@ -8,13 +8,13 @@ import {
   MessageBody,
   ConnectedSocket 
 } from '@nestjs/websockets';
-import { interval, timestamp } from 'rxjs';
 import { Server, Socket } from 'socket.io';
 import {Interval} from '@nestjs/schedule';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @WebSocketGateway({
   cors: {namespace: 'chat',
-    origin: 'http://192.168.186.179:3000/',
+    origin: 'http://localhost:3000/',
     methods: ['GET', 'POST'],
   },
 })
@@ -44,6 +44,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Received message from ${client.id}: ${payload}`);
 
   }
+  @OnEvent('tempdata')
+  handleSerialData(payload: { type: string; value: string }) {
+    console.log(`[SocketGateway] Broadcasting serial data: ${payload.value}`);
+    
+    this.server.emit('tempdata', payload);
+  }
+
   @Interval(10000)
   handleInterval() {
     const message = {

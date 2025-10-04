@@ -1,0 +1,11 @@
+{
+  "remote.autoForwardPorts": true,
+  "remote.autoForwardPortsSource": "process",
+  "remote.portsAttributes": {
+    "4000": {
+      "label": "NestJS API",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    }
+  }
+}
