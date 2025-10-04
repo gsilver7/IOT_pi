@@ -19,7 +19,7 @@ const WebcamStreamClient = () => {
   const socketRef = useRef(null);
   const containerRef = useRef(null);
 
-  const SERVER_URL = 'http://192.168.186.179:4000';
+  const SERVER_URL = 'http://localhost:4000';
 
   useEffect(() => {
     connectToServer();

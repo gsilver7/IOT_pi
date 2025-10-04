@@ -11,5 +11,8 @@ export default defineConfig({
     
     // 포트를 바꾸려면 아래와 같이 port 속성을 추가합니다.
     port: 3000, 
+    allowedHosts: [
+      'kmj-pi.local',
+    ],
   },
 });

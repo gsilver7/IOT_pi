@@ -18,18 +18,27 @@ interface WeatherData {
   상세정보: WeatherDetails;
 }
 
+interface GridCoords {
+  nx: number;
+  ny: number;
+}
+
 // 2. 컴포넌트 타입을 React.FC (Functional Component)로 지정
 const WeatherDisplay: React.FC = () => {
   // 3. useState에 제네릭(<>)으로 타입 지정
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [gridCoords, setGridCoords] = useState<GridCoords>({ nx: 61, ny: 127 });
 
   useEffect(() => {
     const fetchWeather = async () => {
       try {
         // axios.get 요청 시에도 응답 데이터의 타입을 지정할 수 있음
-        const response = await axios.get<WeatherData>('http://192.168.121.179:4000/weather/now');
+        const response = await axios.get<WeatherData>('http://localhost:4000/weather/now',{params: {
+        nx: gridCoords.nx,
+        ny: gridCoords.ny
+      }});
         setWeatherData(response.data);
         setError(null);
       } catch (err) {
