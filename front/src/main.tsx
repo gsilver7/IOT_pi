@@ -8,7 +8,7 @@ interface GridCoords {
     ny: number;
 }
 
-interface MyContextType {
+export interface MyContextType {
     gridCoords: GridCoords;
     setGridCoords: React.Dispatch<React.SetStateAction<GridCoords>>;
 }

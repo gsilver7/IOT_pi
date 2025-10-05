@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import MyContext from '../main';
+import { type MyContextType } from '../main';
 
 // 기상청 격자 좌표 변환 공식 (TypeScript 버전)
 const RE = 6371.00877; // 지구 반경(km)
@@ -49,8 +51,9 @@ function convertToGrid(lat: number, lon: number): GridCoords {
 }
 
 const Grid: React.FC = () => {
+    
     const [geoCoords, setGeoCoords] = useState<GeolocationCoords | null>(null);
-    const [gridCoords, setGridCoords] = useState<GridCoords | null>(null);
+    const {gridCoords, setGridCoords} = useContext<MyContextType>(MyContext);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {

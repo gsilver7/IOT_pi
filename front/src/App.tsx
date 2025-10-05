@@ -7,6 +7,8 @@ import Grid from './components/Grid';
 import WriteButton from './components/WriteButton';
 import styled from '@emotion/styled';
 import { Global, css } from '@emotion/react';
+import Sidebutton from './components/Sidebutton';
+
 
 const globalStyles = css`
   html, body {
@@ -47,16 +49,25 @@ interface SerialDataPayload {
   type : string;
   value: string;
 }
+const Sidediv = styled.div`
+  height: 6%;
+  user-select: none;
+  padding-left:12%;
+  padding-top:12%;
+  font-weight: 700;
+  font-size:130%;
+`;
 
 const Sidebar = styled.div`
-  background-color: black;
   border:0;
   padding:0;
   color: white;
   border: none;
   height: 100%;
-  width: 10%;
+  width: 13%;
   float:left;
+  background: #1A202E;
+
 `;
 
 const Titlebar = styled.div`
@@ -68,10 +79,7 @@ const Titlebar = styled.div`
   border: 1px solid black;
 `;
 
-const Sidebutton = styled.button`
-  width: 100%;
-  height: 7%;
-`;
+
 
 const Timebar = styled.div`
   margin-left: auto
@@ -82,7 +90,7 @@ function App() {
 
   const [message, setMessage] = useState(''); // 입력창의 내용을 관리할 state
   const socket = useSocket(socketUrl); // 이렇게 반환 값을 변수에 저장해야 합니다.
-  const [serverTime, setServerTime] = useState('서버 시간 대기 중...');
+  const [serverTime, setServerTime] = useState('시간 로딩 중...');
   const [serialData, setSerialData] = useState<string | null>(null);
   const [temp, setTemp] = useState<string | null>(null);
 
@@ -161,11 +169,19 @@ function App() {
       <body>
         <Global styles={globalStyles} />
         <Sidebar>
-          <Sidebutton onClick={() => {setHomemode('홈')}}>홈</Sidebutton>
-          <Sidebutton onClick={() => {setHomemode('조명')}}>조명</Sidebutton>
-          <Sidebutton onClick={() => {setHomemode('현관')}}>현관</Sidebutton>
-          <Sidebutton onClick={() => {setHomemode('환기')}}>환기</Sidebutton>
-          <Sidebutton onClick={() => {setHomemode('기타')}}></Sidebutton>
+          <Sidediv>Smart Home</Sidediv>
+          
+          <Sidebutton onClick={() => {setHomemode('홈')}}
+            imageSrc='/Light.svg'
+            >홈</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('조명')}}
+            imageSrc='/Light.svg'>조명</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('환기')}}
+             imageSrc='/Wind.svg'>환기</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('현관')}}
+             imageSrc='/Video.svg'>현관</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('기타')}}
+             imageSrc='/User.svg'>기타</Sidebutton>
         </Sidebar>
         <main>
           <Titlebar>{homemode}
