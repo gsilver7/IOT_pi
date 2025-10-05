@@ -2,12 +2,14 @@
 import useSocket from './hooks/useSocket';
 import { useEffect, useState } from 'react';
 import WebcamStreamClient from './components/WebcamStreamClient';
-import WeatherDisplay from './components/weatherDisplay';
+import WeatherDisplay from './components/WeatherDisplay';
 import Grid from './components/Grid';
 import WriteButton from './components/WriteButton';
 import styled from '@emotion/styled';
 import { Global, css } from '@emotion/react';
 import Sidebutton from './components/Sidebutton';
+import Contentbox from './components/Contentbox';
+import Tempbox from './components/Tempbox';
 
 
 const globalStyles = css`
@@ -17,7 +19,7 @@ const globalStyles = css`
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #F1F5F9;
   }
     
   #root {
@@ -77,12 +79,13 @@ const Titlebar = styled.div`
   align-items: center;
   font-size: 30px;
   border: 1px solid black;
+    background-color:#FFFFFF;
 `;
 
 
 
 const Timebar = styled.div`
-  margin-left: auto
+  margin-left: auto;
 `;
 
 function App() {
@@ -90,9 +93,9 @@ function App() {
 
   const [message, setMessage] = useState(''); // 입력창의 내용을 관리할 state
   const socket = useSocket(socketUrl); // 이렇게 반환 값을 변수에 저장해야 합니다.
-  const [serverTime, setServerTime] = useState('시간 로딩 중...');
+  const [serverTime, setServerTime] = useState('loadion');
   const [serialData, setSerialData] = useState<string | null>(null);
-  const [temp, setTemp] = useState<string | null>(null);
+  const [temp, setTemp] = useState<string>('loading');
 
   const sendMessage = () => {
     // 소켓이 연결되어 있고, 메시지가 비어있지 않을 때만 전송
@@ -172,7 +175,7 @@ function App() {
           <Sidediv>Smart Home</Sidediv>
           
           <Sidebutton onClick={() => {setHomemode('홈')}}
-            imageSrc='/Light.svg'
+            imageSrc='/Home.svg'
             >홈</Sidebutton>
           <Sidebutton onClick={() => {setHomemode('조명')}}
             imageSrc='/Light.svg'>조명</Sidebutton>
@@ -180,6 +183,8 @@ function App() {
              imageSrc='/Wind.svg'>환기</Sidebutton>
           <Sidebutton onClick={() => {setHomemode('현관')}}
              imageSrc='/Video.svg'>현관</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('방문객')}}
+             imageSrc='/User.svg'>방문객</Sidebutton>
           <Sidebutton onClick={() => {setHomemode('기타')}}
              imageSrc='/User.svg'>기타</Sidebutton>
         </Sidebar>
@@ -194,6 +199,7 @@ function App() {
           
           {homemode === '조명' && 
           <div>
+          <Contentbox title="조명" description="집 안 조명 제어"/>
           <WriteButton data="on" label="LED 켜기 (on)" />
           <WriteButton data="off" label="LED 끄기 (off)" />
           {serialData ? (
@@ -206,25 +212,32 @@ function App() {
 
           {homemode === '현관' && 
           <div>
+          <Contentbox title="현관" description="현관 CCTV 관찰"/>
           <WebcamStreamClient/>
-          
           </div>
           }
           
           {homemode === '환기' && 
           <div>
-          <h1>온도 : {temp}</h1>
+          <Contentbox title="환기" description="온도, co2 농도에 따라 환기"/>
+          <Tempbox temp={temp} co2='?'></Tempbox>
+          
           
           </div>
           }
         
 
+          {homemode === '방문객' && 
+          <div>
+
+          </div>
+          }
+
           {homemode === '기타' && 
           <div>
             <input type="text" value={message}
           onChange={(e) => setMessage(e.target.value)}/>
-          <button onClick={sendMessage} style={{ height: '50px', width: '200px' }}></button>
-
+          <button onClick={sendMessage} style={{ height: '50px', width: '200px' }}></button>          
           </div>
           }
           

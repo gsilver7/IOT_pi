@@ -34,7 +34,7 @@ const Styledimg = styled.img`
   position:absolute;
   top:30%;
   left:10%;
-
+  width:10%;
 
 `;
 
