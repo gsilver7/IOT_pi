@@ -4,53 +4,22 @@ import { useEffect, useState } from 'react';
 import WebcamStreamClient from './components/WebcamStreamClient';
 import WeatherDisplay from './components/WeatherDisplay';
 import Grid from './components/Grid';
-import WriteButton from './components/WriteButton';
+import WriteButton from './components/layout/WriteButton';
 import styled from '@emotion/styled';
-import { Global, css } from '@emotion/react';
-import Sidebutton from './components/Sidebutton';
-import Contentbox from './components/Contentbox';
-import Tempbox from './components/Tempbox';
-
-
-const globalStyles = css`
-  html, body {
-    height:100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #F1F5F9;
-  }
-    
-  #root {
-    height: 100%;
-    width: 100%;
-    display: flex;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    color: #333;
-    margin: 0;
-    padding: 0;
-    font-weight: bold;
-  }
-  main {
-    width: 90%;
-    height: 100%;
-  }
-
-  // 모든 링크에 밑줄 제거
-  a {
-    text-decoration: none;
-    color: inherit;
-  }
-`;
+import { Global } from '@emotion/react';
+import Sidebutton from './components/layout/Sidebutton';
+import Contentbox from './components/layout/Contentbox';
+import Tempbox from './components/layout/Tempbox';
+import WindowFan from './components/layout/WindowFan';
+import globalStyles from './styles/globalStyles';
+import Light from './components/layout/Light';
 
 const socketUrl = 'http://localhost:4000/';
 interface SerialDataPayload {
   type : string;
   value: string;
 }
+
 const Sidediv = styled.div`
   height: 6%;
   user-select: none;
@@ -68,6 +37,7 @@ const Sidebar = styled.div`
   height: 100%;
   width: 13%;
   float:left;
+  position:fixed;
   background: #1A202E;
 
 `;
@@ -78,14 +48,19 @@ const Titlebar = styled.div`
   display: flex;
   align-items: center;
   font-size: 30px;
-  border: 1px solid black;
-    background-color:#FFFFFF;
-`;
-
+  background-color:#FFFFFF;
+  box-shadow: 0px 4px 3px -2px #0000000F;
+  position:fixed;
+  left: 13%;
+    width: 87%;
+    z-index:10;
+  `;
 
 
 const Timebar = styled.div`
   margin-left: auto;
+  margin-right:0;
+  padding:0;
 `;
 
 function App() {
@@ -188,18 +163,20 @@ function App() {
           <Sidebutton onClick={() => {setHomemode('기타')}}
              imageSrc='/User.svg'>기타</Sidebutton>
         </Sidebar>
+        <Titlebar>{homemode}
+          <Timebar>{serverTime}</Timebar>
+        </Titlebar>
+        
         <main>
-          <Titlebar>{homemode}
-            <Timebar>{serverTime}</Timebar>
-          </Titlebar>
-          
           {homemode === '홈' && 
             <div><WeatherDisplay /><Grid/></div>
+            
           }
           
           {homemode === '조명' && 
           <div>
           <Contentbox title="조명" description="집 안 조명 제어"/>
+          <Light></Light>
           <WriteButton data="on" label="LED 켜기 (on)" />
           <WriteButton data="off" label="LED 끄기 (off)" />
           {serialData ? (
@@ -221,6 +198,7 @@ function App() {
           <div>
           <Contentbox title="환기" description="온도, co2 농도에 따라 환기"/>
           <Tempbox temp={temp} co2='?'></Tempbox>
+          <WindowFan></WindowFan>
           
           
           </div>

@@ -13,7 +13,7 @@ const Styledbutton = styled.button`
   color:white;
   border:0;
   padding-left:25%;
-
+cursor: pointer;
 `;
 
 const Styledp = styled.p`
