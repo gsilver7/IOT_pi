@@ -13,6 +13,7 @@ import Tempbox from './components/layout/Tempbox';
 import WindowFan from './components/layout/WindowFan';
 import globalStyles from './styles/globalStyles';
 import Light from './components/layout/Light';
+import Visit from './components/layout/Visit';
 
 const socketUrl = 'http://localhost:4000/';
 interface SerialDataPayload {
@@ -207,6 +208,8 @@ function App() {
 
           {homemode === '방문객' && 
           <div>
+          <Contentbox title="방문객" description="현관 CCTV로 방문객 감지"/>
+          <Visit></Visit>
 
           </div>
           }

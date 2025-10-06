@@ -16,8 +16,9 @@ const Sdiv = styled.div`
   padding:3%;
   display:grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   column-gap: 3%;
-  height:25vh;
+  height:50vh;
 `;
 
 const Indiv = styled.div`
@@ -26,20 +27,36 @@ const Indiv = styled.div`
   margin-bottom:5%;
   position:relative;
 `;
+const IndivT = styled.div`
+  border: 1px solid #E6E7E9;
+  border-radius: 10px;
+  margin-bottom:5%;
+  position:relative;
+    grid-row: span 2;
+`;
+const Sp = styled.p`
+  font-weight:600;
+`;
 
 const Light = () => {
-  const {hlight, setHlight,glight, setGlight} = useContext(OnoffContext);
+
+  const {door, setDoor} = useContext(OnoffContext);
   return(      
     <Sdiv>
+      <IndivT>
+        <Sh2>방문객 사진</Sh2>
+
+      </IndivT>   
       <Indiv>
-        <Sh2>현관 조명</Sh2>
-        <ToggleImg buttonimg={hlight ? '/toggle/Lighton.svg' : '/toggle/Lightoff.svg'} ttt={hlight}></ToggleImg>
-        <ToggleButton onClick={()=>setHlight(prev => !prev)} ttt={hlight}></ToggleButton>
-      </Indiv>   
+        <Sh2>방문객 정보</Sh2>
+        <Sp>이름:</Sp>
+        <Sp>시간:</Sp>
+
+      </Indiv>
       <Indiv>
-        <Sh2>거실 조명</Sh2>
-        <ToggleImg buttonimg={glight ? '/toggle/Lighton.svg' : '/toggle/Lightoff.svg'} ttt={glight}></ToggleImg>
-        <ToggleButton onClick={()=>setGlight(prev => !prev)} ttt={glight}></ToggleButton>
+        <Sh2>도어락 제어</Sh2>
+          <ToggleImg buttonimg={door ? '/toggle/Dooron.svg' : '/toggle/Dooroff.svg'} ttt={door}></ToggleImg>
+        <ToggleButton onClick={()=>setDoor(prev => !prev)} ttt={door}></ToggleButton>
       </Indiv>
     </Sdiv>
   )

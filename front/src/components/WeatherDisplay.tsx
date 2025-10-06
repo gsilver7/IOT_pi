@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import MyContext from '../main';
-import { type MyContextType } from '../main';
+import { GridContext } from '../context/GridContext';
 
 // 1. API 응답 데이터의 타입을 interface로 정의
 interface WeatherDetails {
@@ -28,7 +27,7 @@ interface GridCoords {
 // 2. 컴포넌트 타입을 React.FC (Functional Component)로 지정
 const WeatherDisplay: React.FC = () => {
   // 3. useState에 제네릭(<>)으로 타입 지정
-  const {gridCoords, setGridCoords} = useContext<MyContextType>(MyContext);
+  const {gridCoords, setGridCoords} = useContext(GridContext);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
