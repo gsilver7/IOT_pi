@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 @Injectable()
 export class PythonExecutorService {
   private readonly venvPath = '/home/rlaaudwns/web/backend/python';
-  private readonly scriptPath = '/home/rlaaudwns/web/backend/src/python/cv.py';
+  private readonly scriptPath = '/home/rlaaudwns/web/backend/src/python/face_main.py';
 
   executePythonScript(args?: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
