@@ -27,12 +27,8 @@
           "BLUETOOTH_ADMIN",
           "BLUETOOTH_CONNECT",
           "BLUETOOTH_SCAN",
-          "ACCESS_FINE_LOCATION",
-          "BLUETOOTH",
-          "BLUETOOTH_ADMIN",
-          "BLUETOOTH_CONNECT",
-          "BLUETOOTH_SCAN",
-          "ACCESS_FINE_LOCATION"
+          "ACCESS_FINE_LOCATION", 
+          "ACCESS_COARSE_LOCATION"
         ]
       },
       "edgeToEdgeEnabled": true,
@@ -61,8 +57,7 @@
             "backgroundColor": "#000000"
           }
         }
-      ],
-      "react-native-ble-plx"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
