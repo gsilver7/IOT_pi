@@ -47,7 +47,7 @@ const Tempbox: React.FC<Tempbox> = ({temp,co2}) => {
         <Sh3>{temp}</Sh3>
       </Indiv>   
       <Indiv>
-        <Sh2>현재 온도</Sh2>
+        <Sh2>현재 습도</Sh2>
         <Sh3>{co2}</Sh3>
       </Indiv>
     </Sdiv>

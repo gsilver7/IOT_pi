@@ -17,7 +17,7 @@ const Sdiv = styled.div`
   display:grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 3%;
-  height:25vh;
+  height:28vh;
 `;
 
 const Indiv = styled.div`

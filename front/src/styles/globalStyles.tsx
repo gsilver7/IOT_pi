@@ -10,7 +10,8 @@ const globalStyles = css`
     padding: 0;
     font-family: Arial, sans-serif;
     background-color: #F1F5F9;
-    
+    width:100%;
+    height:100%;
   }
     
   #root {
@@ -28,10 +29,9 @@ const globalStyles = css`
   main {
   overflow: scroll;
   position:relative;
-  left: 13%;
-  width: 87%;
+  width: 100%;
   height: 100%;
-  padding-top:3%;
+
 
      /* Firefox용 스크롤바 숨김 */
     scrollbar-width: none;

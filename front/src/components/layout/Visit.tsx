@@ -18,7 +18,7 @@ const Sdiv = styled.div`
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   column-gap: 3%;
-  height:50vh;
+  height:55vh;
 `;
 
 const Indiv = styled.div`
@@ -26,14 +26,16 @@ const Indiv = styled.div`
   border-radius: 10px;
   margin-bottom:5%;
   position:relative;
+  height:25vh;
 `;
 const IndivT = styled.div`
   border: 1px solid #E6E7E9;
   border-radius: 10px;
   margin-bottom:5%;
   position:relative;
-    grid-row: span 2;
-`;
+  grid-row: span 2;
+  
+  `;
 const Sp = styled.p`
   font-weight:600;
 `;

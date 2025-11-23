@@ -38,10 +38,35 @@ const Sidebar = styled.div`
   height: 100%;
   width: 13%;
   float:left;
-  position:fixed;
   background: #1A202E;
-
+  @media (max-width: 800px) {
+    display: none;
+  }
+    z-index:10;
 `;
+
+const Mobabar = styled.div<{ $toggle: boolean }>`
+  border:0;
+  padding:0;
+  color: white;
+  border: none;
+  height: 100%;
+  width: 13%;
+  float:left;
+  background: #1A202E;
+  @media (min-width: 800px) {
+    display: none;
+  }
+  position: absolute;
+  top: 0;
+  left: 0;
+  width:30%;
+  z-index:20;
+  left: ${props => props.$toggle ? '0' : '-300px'};
+  transition: left 1s ease-in-out;
+`;
+
+
 
 const Titlebar = styled.div`
   height:7%;
@@ -51,10 +76,8 @@ const Titlebar = styled.div`
   font-size: 30px;
   background-color:#FFFFFF;
   box-shadow: 0px 4px 3px -2px #0000000F;
-  position:fixed;
-  left: 13%;
-    width: 87%;
-    z-index:10;
+  z-index:10;
+  top:0;
   `;
 
 
@@ -62,6 +85,43 @@ const Timebar = styled.div`
   margin-left: auto;
   margin-right:0;
   padding:0;
+`;
+
+const Body = styled.body`
+  display: flex;
+  flex-direction: row;
+
+`;
+
+const Main = styled.main`
+  display:flex;
+  flex-direction: column;
+`;
+const HomeModeText = styled.span`
+  @media (max-width: 800px) {
+    display: none;
+  }
+`;
+
+const Mobamenu = styled.button`
+  @media (min-width: 800px) {
+    display: none;
+  }
+background: transparent;
+border: none;
+padding: 0;
+cursor: pointer;
+
+`;
+
+const Over = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backgroundColor: rgba(0, 0, 0, 0.5); // 반투명 배경
+  z-index: 10;
 `;
 
 function App() {
@@ -72,6 +132,7 @@ function App() {
   const [serverTime, setServerTime] = useState('loadion');
   const [serialData, setSerialData] = useState<string | null>(null);
   const [temp, setTemp] = useState<string>('loading');
+  const [toggle, setToggle] = useState<boolean>(false);
 
   const sendMessage = () => {
     // 소켓이 연결되어 있고, 메시지가 비어있지 않을 때만 전송
@@ -145,7 +206,8 @@ function App() {
   //'message'
 
   return (
-      <body>
+      <Body>
+        {toggle && <Over onClick={() => setToggle(false)}/>}
         <Global styles={globalStyles} />
         <Sidebar>
           <Sidediv>Smart Home</Sidediv>
@@ -164,11 +226,36 @@ function App() {
           <Sidebutton onClick={() => {setHomemode('기타')}}
              imageSrc='/User.svg'>기타</Sidebutton>
         </Sidebar>
-        <Titlebar>{homemode}
-          <Timebar>{serverTime}</Timebar>
-        </Titlebar>
+
+
+            <Mobabar $toggle={toggle}>
+              <Sidediv>Smart Home</Sidediv>
+              <Sidebutton onClick={() => {setHomemode('홈')}}
+                imageSrc='/Home.svg'
+                >홈</Sidebutton>
+              <Sidebutton onClick={() => {setHomemode('조명')}}
+                imageSrc='/Light.svg'>조명</Sidebutton>
+              <Sidebutton onClick={() => {setHomemode('환기')}}
+                imageSrc='/Wind.svg'>환기</Sidebutton>
+              <Sidebutton onClick={() => {setHomemode('현관')}}
+                imageSrc='/Video.svg'>현관</Sidebutton>
+              <Sidebutton onClick={() => {setHomemode('방문객')}}
+                imageSrc='/User.svg'>방문객</Sidebutton>
+              <Sidebutton onClick={() => {setHomemode('기타')}}
+                imageSrc='/User.svg'>기타</Sidebutton>
+            </Mobabar>
+
         
-        <main>
+        <Main>
+          <Titlebar>
+            <HomeModeText>{homemode}</HomeModeText>
+            
+            <Mobamenu onClick={() => setToggle(prev => !prev)}>
+              <img src="mobatoggle.svg" alt="아이콘" />
+            </Mobamenu>
+            <Timebar>{serverTime}</Timebar>
+          </Titlebar>
+
           {homemode === '홈' && 
             <div><WeatherDisplay /><Grid/></div>
             
@@ -222,8 +309,8 @@ function App() {
           </div>
           }
           
-        </main>
-      </body>
+        </Main>
+      </Body>
   );
 }
 

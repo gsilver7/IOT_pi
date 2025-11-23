@@ -9,17 +9,40 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSBluetoothAlwaysUsageDescription": "블루투스 연결을 위해 필요합니다",
+        "NSBluetoothPeripheralUsageDescription": "블루투스 장치와 통신합니다"
+      },
+      "bundleIdentifier": "com.anonymous.frontapp"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "monochromeImage": "./assets/images/android-icon-monochrome.png",
+        "permissions": [
+          "BLUETOOTH",
+          "BLUETOOTH_ADMIN",
+          "BLUETOOTH_CONNECT",
+          "BLUETOOTH_SCAN",
+          "ACCESS_FINE_LOCATION",
+          "BLUETOOTH",
+          "BLUETOOTH_ADMIN",
+          "BLUETOOTH_CONNECT",
+          "BLUETOOTH_SCAN",
+          "ACCESS_FINE_LOCATION"
+        ]
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT"
+      ],
+      "package": "com.anonymous.frontapp"
     },
     "web": {
       "output": "static",
@@ -38,7 +61,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "react-native-ble-plx"
     ],
     "experiments": {
       "typedRoutes": true,
