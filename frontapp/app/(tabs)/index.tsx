@@ -132,7 +132,7 @@ export default function TabOneScreen() {
   };
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <View style={{ zIndex: 100, position: 'absolute' }}>
         <Button 
           title={scanning ? "스캔 중..." : "블루투스 스캔"} 
@@ -171,8 +171,10 @@ export default function TabOneScreen() {
           </View>
         )}
       </View>
-
-      <WebViewComponent initialUrl="http://192.168.197.179:3000/" showControls={true} />    
+        <View style={{ flex: 1 }}> 
+          <WebViewComponent initialUrl="http://192.168.197.179:3000/" showControls={true} />    
+      </View>
+      
     </View>
   );
 }
