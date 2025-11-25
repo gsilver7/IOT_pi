@@ -19,15 +19,10 @@ interface WeatherData {
   상세정보: WeatherDetails;
 }
 
-interface GridCoords {
-  nx: number;
-  ny: number;
-}
-
 // 2. 컴포넌트 타입을 React.FC (Functional Component)로 지정
 const WeatherDisplay: React.FC = () => {
   // 3. useState에 제네릭(<>)으로 타입 지정
-  const {gridCoords, setGridCoords} = useContext(GridContext);
+  const {gridCoords} = useContext(GridContext);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
