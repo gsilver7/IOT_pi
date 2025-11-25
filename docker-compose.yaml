@@ -1,0 +1,28 @@
+services:
+  iot-pi-client:
+    build:
+      context: ./front
+    container_name: iot-pi-client
+    networks:
+      - iot-pi-network
+
+  iot-pi-server:
+    build:
+      context: ./test-server
+    container_name: iot-pi-server
+    networks:
+      - iot-pi-network
+
+  iot-pi-proxy:
+    image: nginx:alpine
+    container_name: iot-pi-proxy
+    ports:
+      - 8080:80
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - iot-pi-network
+
+networks:
+  iot-pi-network:
+    driver: bridge
