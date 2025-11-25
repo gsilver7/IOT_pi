@@ -130,7 +130,7 @@ function App() {
   const [message, setMessage] = useState(''); // 입력창의 내용을 관리할 state
   const socket = useSocket(socketUrl); // 이렇게 반환 값을 변수에 저장해야 합니다.
   const [serverTime, setServerTime] = useState('loadion');
-  const [serialData, setSerialData] = useState<string | null>(null);
+  const [serialData] = useState<string | null>(null);
   const [temp, setTemp] = useState<string>('loading');
   const [toggle, setToggle] = useState<boolean>(false);
 
