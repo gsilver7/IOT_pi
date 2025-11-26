@@ -12,6 +12,14 @@ import { Server, Socket } from 'socket.io';
 import {Interval} from '@nestjs/schedule';
 import { OnEvent } from '@nestjs/event-emitter';
 
+interface AduDataDto {
+  temp: string;
+  humi: string;
+  timestamp: string;
+  deviceId: string;
+}
+
+
 @WebSocketGateway({
   cors: {
     origin: 'http://kmj.shscript.com:8080',
@@ -45,8 +53,19 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       @ConnectedSocket() client: Socket,
     ): void {
     console.log(`Received message from ${client.id}: ${payload}`);
-
   }
+
+  @SubscribeMessage('adu-data') // 클라이언트가 보낼 이벤트 이름과 일치해야 함
+  handleAdu(
+    @MessageBody() payload: AduDataDto, // 👈 string 대신 인터페이스 사용!
+    @ConnectedSocket() client: Socket,
+  ): void {
+    // 2. 이제 payload.temp 처럼 점(.) 찍어서 데이터에 접근 가능합니다.
+    console.log(`[${client.id}] 센서 데이터 수신:`, payload);
+    console.log(`온도: ${payload.temp}, 습도: ${payload.humi}`);
+  }
+
+
   @OnEvent('tempdata')
   handleSerialData(payload: { type: string; value: string }) {
     console.log(`[SocketGateway] Broadcasting serial data: ${payload.value}`);
