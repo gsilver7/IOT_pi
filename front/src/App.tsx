@@ -15,7 +15,7 @@ import globalStyles from './styles/globalStyles';
 import Light from './components/layout/Light';
 import Visit from './components/layout/Visit';
 
-const socketUrl = 'http://localhost:4000/';
+const socketUrl = 'http://kmj.shscript.com:8080/api';
 interface SerialDataPayload {
   type : string;
   value: string;

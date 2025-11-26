@@ -14,7 +14,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 
 @WebSocketGateway({
   cors: {namespace: 'chat',
-    origin: 'http://localhost:3000/',
+    origin: 'http://kmj.shscript.com:8080/',
     methods: ['GET', 'POST'],
   },
 })
