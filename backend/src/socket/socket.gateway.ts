@@ -15,8 +15,11 @@ import { OnEvent } from '@nestjs/event-emitter';
 @WebSocketGateway({
   cors: {
     origin: 'http://kmj.shscript.com:8080/',
+    credentials: true, 
     methods: ['GET', 'POST'],
   },
+  path: '/socket.io/',  // WebSocket 경로 명시
+  transports: ['websocket', 'polling'],
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
