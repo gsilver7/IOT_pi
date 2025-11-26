@@ -19,7 +19,7 @@ const WebcamStreamClient = () => {
   const socketRef = useRef(null);
   const containerRef = useRef(null);
 
-  const SERVER_URL = 'http://localhost:4000';
+  const SERVER_URL = 'http://kmj.shscript.com:8080';
 
   useEffect(() => {
     connectToServer();
@@ -54,23 +54,30 @@ const WebcamStreamClient = () => {
       });
 
       // 프레임 수신
-      socket.on('frame', (data) => {  
-        // 캔버스에 프레임 렌더링
+      socket.on('stream-data', (data) => {
         const canvas = canvasRef.current;
-        if (canvas) {
-          const ctx = canvas.getContext('2d');
-          const img = new Image();
-          
-          img.onload = () => {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          };
-          
-          img.onerror = () => {
-            console.error('Failed to load frame');
-          };
-          
-          img.src = `data:image/jpeg;base64,${data.data}`;
-        }
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        // 1. 들어온 데이터가 'Buffer' 형태일 수 있으므로 Blob으로 변환
+        // (만약 서버가 그냥 Buffer를 보낸다면 data 자체가 Buffer입니다)
+        const blob = new Blob([data], { type: 'image/jpeg' });
+        
+        // 2. 브라우저 메모리에 이미지 URL 생성 (Base64보다 훨씬 빠름)
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          URL.revokeObjectURL(url); // 3. 메모리 해제 (중요! 안하면 램 폭발)
+        };
+
+        img.onerror = () => {
+          console.error('이미지 로드 실패');
+          URL.revokeObjectURL(url); // 에러나도 해제
+        };
+
+        img.src = url;
       });
       // 캡쳐 성공 이벤트
       socket.on('captureSuccess', (data: CaptureData) => {

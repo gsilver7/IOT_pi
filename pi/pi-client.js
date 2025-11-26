@@ -123,14 +123,13 @@ function startWebcamStreaming() {
   // ffmpeg로 웹캠 캡처
   ffmpegProcess = spawn('ffmpeg', [
     '-f', 'v4l2',
-    '-i', '/dev/video0',        // 웹캠 디바이스
-    '-r', '15',                 // 15 FPS
-    '-s', '640x480',            // 해상도
-    '-f', 'image2pipe',
-    '-vcodec', 'mjpeg',
-    '-q:v', '5',                // 품질 (1-31, 낮을수록 고품질)
-    'pipe:1'
-  ]);
+    '-framerate', '15',     // 웹소켓 부하 줄이려면 프레임 좀 낮추는 게 좋음
+    '-video_size', '640x480',
+    '-i', '/dev/video0',
+    '-f', 'mjpeg',          // 👈 핵심: mpegts 말고 mjpeg로 변경!
+    '-q:v', '5',            // 화질 (1~31, 낮을수록 고화질)
+    '-'
+]);
 
   let frameBuffer = Buffer.alloc(0);
 
