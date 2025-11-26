@@ -17,7 +17,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-    await app.listen(4000);
+    await app.listen(4000, '0.0.0.0');
     console.log('서버가 4000번 포트에서 실행 중입니다.');
 }
 bootstrap();
