@@ -32,10 +32,10 @@ const Indiv = styled.div`
 
 interface Tempbox {
   temp: string;
-  co2: string;
+  humi: string;
 }
 
-const Tempbox: React.FC<Tempbox> = ({temp,co2}) => {
+const Tempbox: React.FC<Tempbox> = ({temp,humi}) => {
 
 
 
@@ -48,7 +48,7 @@ const Tempbox: React.FC<Tempbox> = ({temp,co2}) => {
       </Indiv>   
       <Indiv>
         <Sh2>현재 습도</Sh2>
-        <Sh3>{co2}</Sh3>
+        <Sh3>{humi}</Sh3>
       </Indiv>
     </Sdiv>
 

@@ -135,6 +135,7 @@ function App() {
   const [serverTime, setServerTime] = useState('loading');
   const [serialData] = useState<string | null>(null);
   const [temp, setTemp] = useState<string>('loading');
+  const [humi, setHumi] = useState<string>('loading');
   const [toggle, setToggle] = useState<boolean>(false);
 
   const sendMessage = () => {
@@ -185,7 +186,7 @@ function App() {
       console.log('온도 :', payload.temp);
       setTemp(payload.temp);
       console.log('습도 :', payload.humi);
-      setTemp(payload.humi);
+      setHumi(payload.humi);
     }
 
     if (socket) { // socket이 성공적으로 연결되었을 때
@@ -290,7 +291,7 @@ function App() {
           {homemode === '환기' && 
           <div>
           <Contentbox title="환기" description="온도, co2 농도에 따라 환기"/>
-          <Tempbox temp={temp} co2='?'></Tempbox>
+          <Tempbox temp={temp} humi={humi}></Tempbox>
           <WindowFan></WindowFan>
           
           
