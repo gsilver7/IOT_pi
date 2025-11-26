@@ -20,6 +20,7 @@ import { OnEvent } from '@nestjs/event-emitter';
   },
   path: '/socket.io/',  // WebSocket 경로 명시
   transports: ['websocket', 'polling'],
+  allowUpgrades: false,
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
