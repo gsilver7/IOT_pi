@@ -2,6 +2,7 @@ FROM node:20-alpine
 
 RUN apk add --no-cache \
     python3 \
+    py3-pip \
     make \
     g++ \
     cairo-dev \
@@ -13,6 +14,10 @@ RUN apk add --no-cache \
     libusb-dev
 
 WORKDIR /app
+
+COPY requirements.txt ./
+
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # package.json과 package-lock.json 복사
 COPY package*.json ./

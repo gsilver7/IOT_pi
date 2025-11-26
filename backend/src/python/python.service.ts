@@ -4,14 +4,12 @@ import * as path from 'path';
 
 @Injectable()
 export class PythonExecutorService {
-  private readonly venvPath = path.join(process.cwd(), 'python');
   private readonly scriptPath = path.join(process.cwd(), 'src', 'python', 'face_main.py');
 
   executePythonScript(args?: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
-      const pythonPath = process.platform === 'win32'
-        ? `${this.venvPath}\\Scripts\\python.exe`
-        : `${this.venvPath}/bin/python`;
+      const pythonPath = 'python3';
+
 
       const scriptArgs = args || [];
       const pythonProcess = spawn(pythonPath, [this.scriptPath, ...scriptArgs]);
