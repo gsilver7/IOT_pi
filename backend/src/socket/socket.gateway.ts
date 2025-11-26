@@ -17,6 +17,7 @@ import { OnEvent } from '@nestjs/event-emitter';
     origin: 'http://kmj.shscript.com:8080/',
     methods: ['GET', 'POST'],
   },
+  path: '/api'
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
