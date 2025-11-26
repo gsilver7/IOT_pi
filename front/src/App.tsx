@@ -85,6 +85,7 @@ const Timebar = styled.div`
   margin-left: auto;
   margin-right:0;
   padding:0;
+  padding-right:10px;
 `;
 
 const Body = styled.body`
