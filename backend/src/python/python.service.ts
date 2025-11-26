@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { spawn } from 'child_process';
+import * as path from 'path';
 
 @Injectable()
 export class PythonExecutorService {
-  private readonly venvPath = '/home/rlaaudwns/web/backend/python';
-  private readonly scriptPath = '/home/rlaaudwns/web/backend/src/python/face_main.py';
+  private readonly venvPath = path.join(process.cwd(), 'python');
+  private readonly scriptPath = path.join(process.cwd(), 'src', 'python', 'face_main.py');
 
   executePythonScript(args?: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
