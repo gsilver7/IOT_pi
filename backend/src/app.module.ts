@@ -31,7 +31,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 //    }),
     EventEmitterModule.forRoot({wildcard: true,
       delimiter: '.',}),
-    PythonModule,EventsModule, UsbModule,StreamModule,WeatherModule, SerialModule
+//    PythonModule,
+    
+    EventsModule, UsbModule,StreamModule,WeatherModule, SerialModule
   ],
   controllers: [AppController],
   providers: [AppService],
