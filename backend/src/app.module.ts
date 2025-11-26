@@ -22,15 +22,17 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       timeout: 5000, // 요청 시간 초과 5초
     }),
     ScheduleModule.forRoot(),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGOURL'), // ConfigService를 사용해 환경변수 조회
-      }),
-      inject: [ConfigService], // ConfigService를 주입
-    }),EventEmitterModule.forRoot({wildcard: true,
+    // MongooseModule.forRootAsync({
+    //   imports: [ConfigModule],
+    //   useFactory: async (configService: ConfigService) => ({
+    //     uri: configService.get<string>('MONGOURL'), // ConfigService를 사용해 환경변수 조회
+    //   }),
+    //   inject: [ConfigService], // ConfigService를 주입
+    // }),
+      EventEmitterModule.forRoot({wildcard: true,
       delimiter: '.',}),
-    PythonModule,EventsModule, UsbModule,StreamModule,WeatherModule, SerialModule
+    //PythonModule,
+    EventsModule, UsbModule,StreamModule,WeatherModule, SerialModule
   ],
   controllers: [AppController],
   providers: [AppService],

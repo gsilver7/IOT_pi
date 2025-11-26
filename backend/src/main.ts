@@ -7,7 +7,9 @@ async function bootstrap() {
 
   // IoAdapter를 소켓 어댑터로 등록
   app.useWebSocketAdapter(new IoAdapter(app));
-  
+  app.setGlobalPrefix('api');  
+
+
   // CORS 설정 (프론트엔드와 통신하기 위해 필요)
   app.enableCors({
     origin: '*', // 프론트엔드 URL
