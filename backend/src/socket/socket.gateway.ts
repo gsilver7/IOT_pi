@@ -13,11 +13,11 @@ import {Interval} from '@nestjs/schedule';
 import { OnEvent } from '@nestjs/event-emitter';
 
 @WebSocketGateway({
-  cors: {namespace: 'chat',
+  namespace: 'chat',
+  cors: {
     origin: 'http://kmj.shscript.com:8080/',
     methods: ['GET', 'POST'],
   },
-  path: '/api'
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
