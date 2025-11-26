@@ -16,9 +16,11 @@ import Light from './components/layout/Light';
 import Visit from './components/layout/Visit';
 
 
-interface SerialDataPayload {
-  type : string;
-  value: string;
+interface AduDataDto {
+  temp: string;
+  humi: string;
+  timestamp: string;
+  deviceId: string;
 }
 
 const Sidediv = styled.div`
@@ -179,10 +181,12 @@ function App() {
       
     };
 
-    const handleTemp = (payload: SerialDataPayload) => {
-            console.log('온도 :', payload.value);
-            setTemp(payload.value);
-        }
+    const handleData = (payload: AduDataDto) => {
+      console.log('온도 :', payload.temp);
+      setTemp(payload.temp);
+      console.log('습도 :', payload.humi);
+      setTemp(payload.humi);
+    }
 
     if (socket) { // socket이 성공적으로 연결되었을 때
       socket.on('connect', handleConnect);
@@ -190,7 +194,7 @@ function App() {
       socket.on('some-event', handleSomeEvent);
       socket.on('connect_error', handleError);
       socket.on('server-time', handleTime);
-      socket.on('tempdata', handleTemp);
+      socket.on('adu-data', handleData);
     }
   return () => {
     if (socket) {
@@ -199,7 +203,7 @@ function App() {
       socket.off('some-event', handleSomeEvent);
       socket.off('connect_error', handleError);
       socket.off('server-time', handleTime);
-      socket.off('tempdata', handleTemp);
+      socket.off('adu-data', handleData);
     }
   }
   }, [socket]); // socket 객체가 변경될 때마다 useEffect 실행
