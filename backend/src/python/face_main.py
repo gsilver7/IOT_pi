@@ -1,5 +1,10 @@
 from face_recognition_module import FaceVectorExtractor, VectorStorage, FaceComparator
 
+# 현재 이 파이썬 파일이 있는 폴더의 경로를 구함
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# 사진이 있는 폴더 경로 (현재 파일 위치가 src/python 이라고 가정할 때)
+photo_dir = os.path.join(current_dir, "photo")
 # 1. 초기 설정
 extractor = FaceVectorExtractor(model="hog")
 storage = VectorStorage(storage_dir="/home/rlaaudwns/web/backend/src/python/family_faces")
@@ -7,9 +12,9 @@ comparator = FaceComparator(tolerance=0.6)
 
 # 2. 가족 사진에서 벡터 추출 및 저장
 family_photos = {
-    "아버지": "/home/rlaaudwns/web/backend/src/python/photo/dad.jpg",
-    "어머니": "/home/rlaaudwns/web/backend/src/python/photo/mom.jpg",
-    "형": "/home/rlaaudwns/web/backend/src/python/photo/brother.jpg"
+    "아버지": os.path.join(photo_dir, "dad.jpg"),
+    "어머니": os.path.join(photo_dir, "mom.jpg"),
+    "형": os.path.join(photo_dir, "brother.jpg")
 }
 
 print("=== 가족 벡터 저장 ===")
@@ -27,7 +32,7 @@ saved_names = storage.list_saved_vectors()
 print(f"저장된 사람: {saved_names}")
 
 # 4. 새 사진과 비교
-new_photo = "/home/rlaaudwns/web/backend/src/python/photo/unknown5.jpg"
+new_photo = os.path.join(photo_dir, "unknown5.jpg")
 new_vector = extractor.extract_face_vector(new_photo)
 
 print("\n=== 비교 결과 ===")
