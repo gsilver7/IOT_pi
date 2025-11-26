@@ -15,9 +15,11 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-COPY requirements.txt ./
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-RUN pip3 install --no-cache-dir -r requirements.txt
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 # package.json과 package-lock.json 복사
 COPY package*.json ./
