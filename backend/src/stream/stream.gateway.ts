@@ -9,8 +9,6 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import * as ffmpeg from 'fluent-ffmpeg';
-import { FfmpegCommand } from 'fluent-ffmpeg';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -23,19 +21,14 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   private connectedClients = new Set<string>();
-  private streamCommand: FfmpegCommand | null = null;
-  private isStreaming = false;
-  private latestFrame: Buffer | null = null; // 최신 프레임 저장
+  private piClient: Socket | null = null; // 라즈베리파이 클라이언트
+  private latestFrame: Buffer | null = null;
+  private frameCount = 0;
 
   // 클라이언트가 연결되었을 때
   handleConnection(client: Socket) {
     console.log(`✅ Client connected: ${client.id}`);
     this.connectedClients.add(client.id);
-
-    // 첫 클라이언트 연결 시 스트림 시작
-    if (this.connectedClients.size === 1) {
-      this.startWebcamStream();
-    }
 
     client.emit('connected', {
       message: 'Connected to webcam stream',
@@ -48,85 +41,72 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`❌ Client disconnected: ${client.id}`);
     this.connectedClients.delete(client.id);
 
-    // 모든 클라이언트가 나가면 스트림 중지
-    if (this.connectedClients.size === 0) {
-      this.stopWebcamStream();
+    // 라즈베리파이 클라이언트 연결 끊김
+    if (this.piClient?.id === client.id) {
+      console.log('🔴 Raspberry Pi disconnected');
+      this.piClient = null;
     }
   }
 
-  // FFmpeg 스트림 시작
-  private startWebcamStream() {
-    if (this.isStreaming) {
-      console.log('Stream already running');
-      return;
+  // 라즈베리파이로부터 웹캠 프레임 수신
+  @SubscribeMessage('webcam-frame')
+  handleWebcamFrame(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { deviceId: string; frame: string; timestamp: string },
+  ) {
+    // 라즈베리파이 클라이언트 등록
+    if (!this.piClient) {
+      this.piClient = client;
+      console.log(`📹 Raspberry Pi registered: ${data.deviceId}`);
     }
-    console.log('Starting webcam stream...');
-    this.isStreaming = true;
 
-    this.streamCommand = ffmpeg('/dev/video0')
-      .inputOptions(['-re', '-f', 'v4l2'])
-      .size('640x480')
-      .fps(15)
-      .videoCodec('mjpeg')
-      .outputOptions(['-f', 'image2pipe', '-vcodec', 'mjpeg', '-q:v', '5', '-huffman', 'optimal']);
+    try {
+      // Base64 -> Buffer 변환
+      const frameBuffer = Buffer.from(data.frame, 'base64');
+      this.latestFrame = frameBuffer;
+      this.frameCount++;
 
-    this.streamCommand
-      .on('start', (cmdline) => console.log('FFmpeg started:', cmdline))
-      .on('error', (err) => {
-        console.error('FFmpeg error:', err.message);
-        this.stopWebcamStream();
-      })
-      .on('end', () => {
-        console.log('FFmpeg stream ended');
-        this.stopWebcamStream();
-      });
-
-    const stream = this.streamCommand.pipe();
-    let buffer = Buffer.alloc(0);
-    let frameCount = 0;
-
-    stream.on('data', (chunk) => {
-      buffer = Buffer.concat([buffer, chunk]);
-      let startIdx = buffer.indexOf(Buffer.from([0xFF, 0xD8]));
-      let endIdx = buffer.indexOf(Buffer.from([0xFF, 0xD9]));
-
-      while (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-        const frame = buffer.slice(startIdx, endIdx + 2);
-        buffer = buffer.slice(endIdx + 2);
-        frameCount++;
-
-        this.latestFrame = frame;
-
-        if (this.connectedClients.size > 0) {
-          const base64Frame = frame.toString('base64');
-          this.server.emit('frame', {
-            data: base64Frame,
-            timestamp: Date.now(),
-            frameNumber: frameCount,
-          });
-        }
-
-        startIdx = buffer.indexOf(Buffer.from([0xFF, 0xD8]));
-        endIdx = buffer.indexOf(Buffer.from([0xFF, 0xD9]));
+      // 연결된 모든 프론트엔드 클라이언트에게 브로드캐스트
+      if (this.connectedClients.size > 0) {
+        this.server.emit('frame', {
+          data: data.frame, // base64 그대로 전송
+          timestamp: Date.now(),
+          frameNumber: this.frameCount,
+          deviceId: data.deviceId,
+        });
       }
-    });
 
-    stream.on('error', (err) => {
-      console.error('Stream error:', err.message);
-      this.stopWebcamStream();
-    });
-  }
-
-  // FFmpeg 스트림 중지
-  private stopWebcamStream() {
-    if (this.streamCommand) {
-      console.log('Stopping webcam stream...');
-      this.streamCommand.kill('SIGKILL');
-      this.streamCommand = null;
+      console.log(`📹 Frame ${this.frameCount} broadcasted to ${this.connectedClients.size} clients`);
+      
+      return { success: true, frameNumber: this.frameCount };
+    } catch (error) {
+      console.error('🔴 Frame processing error:', error.message);
+      return { success: false, error: error.message };
     }
-    this.isStreaming = false;
   }
 
+  // 라즈베리파이에 명령 전송
+  @SubscribeMessage('control-webcam')
+  handleControlWebcam(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { command: 'start' | 'stop' },
+  ) {
+    if (!this.piClient) {
+      client.emit('controlError', {
+        message: 'Raspberry Pi not connected',
+      });
+      return { success: false, error: 'Raspberry Pi not connected' };
+    }
+
+    const command = data.command === 'start' ? 'start-webcam' : 'stop-webcam';
+    
+    this.piClient.emit('command', { command });
+    
+    console.log(`📡 Command sent to Pi: ${command}`);
+    return { success: true, command };
+  }
+
+  // 현재 프레임 캡처
   @SubscribeMessage('captureFrame')
   async handleCaptureFrame(
     @ConnectedSocket() client: Socket,
@@ -156,13 +136,13 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // base64로 변환하여 클라이언트로 전송
       const base64Image = this.latestFrame.toString('base64');
 
-      // 성공 응답 (파일 정보 + 이미지 데이터)
+      // 성공 응답
       client.emit('captureSuccess', {
         message: 'Frame captured successfully',
         filename,
         path: filePath,
         timestamp,
-        imageData: `data:image/jpeg;base64,${base64Image}`, // 프론트에서 바로 사용 가능
+        imageData: `data:image/jpeg;base64,${base64Image}`,
       });
 
       console.log(`📸 Captured frame saved: ${filename}`);
@@ -178,4 +158,17 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  // 아두이노 센서 데이터 수신
+  @SubscribeMessage('adu-data')
+  handleAduData(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { temp: number; humi: number; timestamp: string; deviceId: string },
+  ) {
+    console.log('📥 Arduino data received:', data);
+
+    // 모든 클라이언트에게 센서 데이터 브로드캐스트
+    this.server.emit('sensor-data', data);
+
+    return { success: true, message: 'Sensor data received' };
+  }
 }

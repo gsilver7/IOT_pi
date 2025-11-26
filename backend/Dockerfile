@@ -1,25 +1,38 @@
-FROM node:20-alpine
+FROM node:20
 
-RUN apk add --no-cache \
+# 2. 시스템 패키지 설치 (Debian/Ubuntu 명령어 사용)
+# Alpine 패키지 이름들을 Debian용으로 번역했습니다.
+RUN apt-get update && apt-get install -y \
     python3 \
-    py3-pip \
+    python3-pip \
+    python3-venv \
     make \
     g++ \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev \
-    pixman-dev \
-    eudev-dev \
-    libusb-dev
+    build-essential \
+    cmake \
+    libcairo2-dev \
+    libjpeg-dev \
+    libpango1.0-dev \
+    libgif-dev \
+    libpixman-1-dev \
+    libusb-1.0-0-dev \
+    libopenblas-dev \
+    liblapack-dev \
+    libx11-dev \
+    libgtk-3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 
 WORKDIR /app
 
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+# 4. [중요] PIP 타임아웃 방지 설정 (환경변수)
+ENV PIP_DEFAULT_TIMEOUT=1000
+
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
 
 # package.json과 package-lock.json 복사
 COPY package*.json ./

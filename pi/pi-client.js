@@ -2,6 +2,7 @@
 const io = require('socket.io-client');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
+const { spawn } = require('child_process'); // 추가
 
 
 const SERIAL_PORT = '/dev/ttyUSB0'; // 또는 '/dev/ttyACM0'
@@ -30,11 +31,13 @@ const socket = io(`${AWS_SERVER}`, {
 // 연결 성공
 socket.on('connect', () => {
   console.log('✅ AWS 서버 연결 성공:', socket.id);
+  startWebcamStreaming(); // 👈 여기!
 });
 
 // 연결 끊김
 socket.on('disconnect', (reason) => {
   console.warn('❌ AWS 서버 연결 끊김:', reason);
+  stopWebcamStreaming(); // 👈 여기!
 });
 
 // 연결 에러
@@ -45,6 +48,11 @@ socket.on('connect_error', (error) => {
 // AWS로부터 명령 수신 (필요시)
 socket.on('command', (data) => {
   console.log('📥 명령 수신:', data);
+  
+  if (data.command === 'stop-webcam') {
+    stopWebcamStreaming(); // 👈 이런 식으로 추가 가능
+  }
+  
   if (data.command) {
     port.write(data.command + '\n');
   }
@@ -107,9 +115,75 @@ setInterval(() => {
   sendaduData(aduData);
 }, 3000);
 
+let ffmpegProcess = null;
+
+function startWebcamStreaming() {
+  console.log('📹 웹캠 스트리밍 시작...');
+  
+  // ffmpeg로 웹캠 캡처
+  ffmpegProcess = spawn('ffmpeg', [
+    '-f', 'v4l2',
+    '-i', '/dev/video0',        // 웹캠 디바이스
+    '-r', '15',                 // 15 FPS
+    '-s', '640x480',            // 해상도
+    '-f', 'image2pipe',
+    '-vcodec', 'mjpeg',
+    '-q:v', '5',                // 품질 (1-31, 낮을수록 고품질)
+    'pipe:1'
+  ]);
+
+  let frameBuffer = Buffer.alloc(0);
+
+  ffmpegProcess.stdout.on('data', (data) => {
+    frameBuffer = Buffer.concat([frameBuffer, data]);
+
+    // JPEG 시작(0xFFD8)과 끝(0xFFD9) 마커 찾기
+    let start = frameBuffer.indexOf(Buffer.from([0xFF, 0xD8]));
+    let end = frameBuffer.indexOf(Buffer.from([0xFF, 0xD9]));
+
+    while (start !== -1 && end !== -1 && end > start) {
+      const frame = frameBuffer.slice(start, end + 2);
+      
+      // AWS로 프레임 전송
+      socket.emit('webcam-frame', {
+        deviceId: 'pi-001',
+        frame: frame.toString('base64'),
+        timestamp: new Date().toISOString()
+      });
+
+      // 버퍼에서 전송된 프레임 제거
+      frameBuffer = frameBuffer.slice(end + 2);
+      start = frameBuffer.indexOf(Buffer.from([0xFF, 0xD8]));
+      end = frameBuffer.indexOf(Buffer.from([0xFF, 0xD9]));
+    }
+  });
+
+  ffmpegProcess.stderr.on('data', (data) => {
+    // ffmpeg 로그 (필요시 주석 해제)
+    // console.error('ffmpeg:', data.toString());
+  });
+
+  ffmpegProcess.on('close', (code) => {
+    console.log('📹 웹캠 스트리밍 종료:', code);
+  });
+
+  ffmpegProcess.on('error', (error) => {
+    console.error('🔴 ffmpeg 에러:', error.message);
+  });
+}
+
+function stopWebcamStreaming() {
+  if (ffmpegProcess) {
+    console.log('📹 웹캠 스트리밍 중지...');
+    ffmpegProcess.kill('SIGTERM');
+    ffmpegProcess = null;
+  }
+}
+
 // Ctrl+C로 종료 시 정리
 process.on('SIGINT', () => {
   console.log('\n종료 중...');
+  stopWebcamStreaming(); // 👈 여기!
   port.close();
   socket.disconnect();
   process.exit();
