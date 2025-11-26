@@ -15,7 +15,7 @@ import globalStyles from './styles/globalStyles';
 import Light from './components/layout/Light';
 import Visit from './components/layout/Visit';
 
-const socketUrl = 'http://kmj.shscript.com:8080/api';
+
 interface SerialDataPayload {
   type : string;
   value: string;
@@ -85,6 +85,7 @@ const Timebar = styled.div`
   margin-left: auto;
   margin-right:0;
   padding:0;
+  padding-right:10px;
 `;
 
 const Body = styled.body`
@@ -128,8 +129,8 @@ function App() {
   const [homemode, setHomemode] = useState<string>('홈');
 
   const [message, setMessage] = useState(''); // 입력창의 내용을 관리할 state
-  const socket = useSocket(socketUrl); // 이렇게 반환 값을 변수에 저장해야 합니다.
-  const [serverTime, setServerTime] = useState('loadion');
+  const socket = useSocket(); // 이렇게 반환 값을 변수에 저장해야 합니다.
+  const [serverTime, setServerTime] = useState('loading');
   const [serialData] = useState<string | null>(null);
   const [temp, setTemp] = useState<string>('loading');
   const [toggle, setToggle] = useState<boolean>(false);
