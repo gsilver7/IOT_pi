@@ -13,7 +13,6 @@ import {Interval} from '@nestjs/schedule';
 import { OnEvent } from '@nestjs/event-emitter';
 
 @WebSocketGateway({
-  namespace: 'chat',
   cors: {
     origin: 'http://kmj.shscript.com:8080/',
     methods: ['GET', 'POST'],
