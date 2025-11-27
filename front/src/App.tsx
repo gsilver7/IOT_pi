@@ -156,27 +156,39 @@ function App() {
   const [toggle, setToggle] = useState<boolean>(false);
 
   useEffect(() => {
-    controlMessage.light = hlight;
+    const newControlMessage = {
+        light: hlight,
+        w: w1,
+        fan: fan1
+    };
     console.log('hlight 상태 변경:', hlight);
-    setMessage(controlMessage);
+    setMessage(newControlMessage);
     if (socket) {
       socket.emit('control', message);
     }
   }, [hlight]); // hlight가 변경될 때마다 실행
   
   useEffect(() => {
-    controlMessage.w = w1;
+    const newControlMessage = {
+        light: hlight,
+        w: w1,
+        fan: fan1
+    };
     console.log('w1 상태 변경:', hlight);
-    setMessage(controlMessage);
+    setMessage(newControlMessage);
     if (socket) {
       socket.emit('control', message);
     }
   }, [w1]);
 
   useEffect(() => {
-    controlMessage.fan = fan1;
+    const newControlMessage = {
+        light: hlight,
+        w: w1,
+        fan: fan1
+    };
     console.log('hlight 상태 변경:', hlight);
-    setMessage(controlMessage);
+    setMessage(newControlMessage);
     if (socket) {
       socket.emit('control', message);
     }
