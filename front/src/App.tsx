@@ -157,9 +157,9 @@ function App() {
 
   useEffect(() => {
     const newControlMessage = {
-        light: hlight,
-        w: w1,
-        fan: fan1
+      light: !hlight,
+      w: w1,
+      fan: fan1
     };
     console.log('hlight 상태 변경:', hlight);
     setMessage(newControlMessage);
@@ -170,9 +170,9 @@ function App() {
   
   useEffect(() => {
     const newControlMessage = {
-        light: hlight,
-        w: w1,
-        fan: fan1
+      light: hlight,
+      w: !w1,
+      fan: fan1
     };
     console.log('w1 상태 변경:', hlight);
     setMessage(newControlMessage);
@@ -183,9 +183,9 @@ function App() {
 
   useEffect(() => {
     const newControlMessage = {
-        light: hlight,
-        w: w1,
-        fan: fan1
+      light: hlight,
+      w: w1,
+      fan: !fan1
     };
     console.log('hlight 상태 변경:', hlight);
     setMessage(newControlMessage);
