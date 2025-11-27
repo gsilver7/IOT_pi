@@ -136,7 +136,7 @@ function App() {
     w: boolean;
     fan: boolean;
 }
-  const controlMessage:ControlMessage = {
+  let controlMessage:ControlMessage = {
     light : false,
     w : false,
     fan : false,
@@ -155,38 +155,38 @@ function App() {
   const [toggle, setToggle] = useState<boolean>(false);
 
   useEffect(() => {
-    const newControlMessage = {
+    controlMessage = {
       light: !hlight,
       w: w1,
       fan: fan1
     };
     console.log('hlight 상태 변경:', hlight);
     if (socket) {
-      socket.emit('control', newControlMessage);
+      socket.emit('control', controlMessage);
     }
   }, [hlight]); // hlight가 변경될 때마다 실행
   
   useEffect(() => {
-    const newControlMessage = {
+    controlMessage = {
       light: hlight,
       w: !w1,
       fan: fan1
     };
     console.log('w1 상태 변경:', hlight);
     if (socket) {
-      socket.emit('control', newControlMessage);
+      socket.emit('control', controlMessage);
     }
   }, [w1]);
 
   useEffect(() => {
-    const newControlMessage = {
+    controlMessage = {
       light: hlight,
       w: w1,
       fan: !fan1
     };
     console.log('hlight 상태 변경:', hlight);
     if (socket) {
-      socket.emit('control', newControlMessage);
+      socket.emit('control', controlMessage);
     }
   }, [fan1]);
 
