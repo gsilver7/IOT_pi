@@ -146,7 +146,6 @@ function App() {
   const { hlight, w1, fan1 } = useContext(OnoffContext);
 
   const [homemode, setHomemode] = useState<string>('홈');
-  const [message, setMessage] = useState<ControlMessage>(controlMessage); // 입력창의 내용을 관리할 state
   const [serverTime, setServerTime] = useState('loading');
   const [serialData] = useState<string | null>(null);
   const [temp, setTemp] = useState<string>('loading');
@@ -162,7 +161,6 @@ function App() {
       fan: fan1
     };
     console.log('hlight 상태 변경:', hlight);
-    setMessage(newControlMessage);
     if (socket) {
       socket.emit('control', newControlMessage);
     }
@@ -175,7 +173,6 @@ function App() {
       fan: fan1
     };
     console.log('w1 상태 변경:', hlight);
-    setMessage(newControlMessage);
     if (socket) {
       socket.emit('control', newControlMessage);
     }
@@ -188,7 +185,6 @@ function App() {
       fan: !fan1
     };
     console.log('hlight 상태 변경:', hlight);
-    setMessage(newControlMessage);
     if (socket) {
       socket.emit('control', newControlMessage);
     }
