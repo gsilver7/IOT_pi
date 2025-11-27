@@ -21,21 +21,26 @@ const Sdiv = styled.div`
   padding:3%;
   display:grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr 0.1fr;
   column-gap: 3%;
+  row-gap: 5%;
 `;
 
 const Indiv = styled.div`
   border: 1px solid #E6E7E9;
   border-radius: 10px;
   height:200px;
+  
 `;
 
 interface Tempbox {
   temp: string;
   humi: string;
+  co2: string;
+  light: string;
 }
 
-const Tempbox: React.FC<Tempbox> = ({temp,humi}) => {
+const Tempbox: React.FC<Tempbox> = ({temp,humi,co2,light}) => {
 
 
 
@@ -49,6 +54,14 @@ const Tempbox: React.FC<Tempbox> = ({temp,humi}) => {
       <Indiv>
         <Sh2>현재 습도</Sh2>
         <Sh3>{humi}</Sh3>
+      </Indiv>
+      <Indiv>
+        <Sh2>현재 co2</Sh2>
+        <Sh3>{co2}</Sh3>
+      </Indiv>
+      <Indiv>
+        <Sh2>현재 조도</Sh2>
+        <Sh3>{light}</Sh3>
       </Indiv>
     </Sdiv>
 

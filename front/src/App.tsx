@@ -136,6 +136,8 @@ function App() {
   const [serialData] = useState<string | null>(null);
   const [temp, setTemp] = useState<string>('loading');
   const [humi, setHumi] = useState<string>('loading');
+  const [co2, setCo2] = useState<string>('loading');
+  const [light, setLight] = useState<string>('loading');
   const [toggle, setToggle] = useState<boolean>(false);
 
   const sendMessage = () => {
@@ -221,35 +223,35 @@ function App() {
           <Sidebutton onClick={() => {setHomemode('홈')}}
             imageSrc='/Home.svg'
             >홈</Sidebutton>
-          <Sidebutton onClick={() => {setHomemode('조명')}}
-            imageSrc='/Light.svg'>조명</Sidebutton>
-          <Sidebutton onClick={() => {setHomemode('환기')}}
-             imageSrc='/Wind.svg'>환기</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('모드')}}
+            imageSrc='/Mode.svg'>모드</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('센서')}}
+             imageSrc='/Wind.svg'>센서</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('제어')}}
+             imageSrc='/Control.svg'>제어</Sidebutton>
           <Sidebutton onClick={() => {setHomemode('현관')}}
              imageSrc='/Video.svg'>현관</Sidebutton>
           <Sidebutton onClick={() => {setHomemode('방문객')}}
              imageSrc='/User.svg'>방문객</Sidebutton>
-          <Sidebutton onClick={() => {setHomemode('기타')}}
-             imageSrc='/User.svg'>기타</Sidebutton>
         </Sidebar>
 
 
-            <Mobabar $toggle={toggle}>
-              <Sidediv>Smart Home</Sidediv>
-              <Sidebutton onClick={() => {setHomemode('홈')}}
-                imageSrc='/Home.svg'
-                >홈</Sidebutton>
-              <Sidebutton onClick={() => {setHomemode('조명')}}
-                imageSrc='/Light.svg'>조명</Sidebutton>
-              <Sidebutton onClick={() => {setHomemode('환기')}}
-                imageSrc='/Wind.svg'>환기</Sidebutton>
-              <Sidebutton onClick={() => {setHomemode('현관')}}
-                imageSrc='/Video.svg'>현관</Sidebutton>
-              <Sidebutton onClick={() => {setHomemode('방문객')}}
-                imageSrc='/User.svg'>방문객</Sidebutton>
-              <Sidebutton onClick={() => {setHomemode('기타')}}
-                imageSrc='/User.svg'>기타</Sidebutton>
-            </Mobabar>
+        <Mobabar $toggle={toggle}>
+          <Sidediv>Smart Home</Sidediv>
+          <Sidebutton onClick={() => {setHomemode('홈')}}
+            imageSrc='/Home.svg'
+            >홈</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('모드')}}
+            imageSrc='/Mode.svg'>모드</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('센서')}}
+              imageSrc='/Wind.svg'>센서</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('제어')}}
+              imageSrc='/Control.svg'>제어</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('현관')}}
+              imageSrc='/Video.svg'>현관</Sidebutton>
+          <Sidebutton onClick={() => {setHomemode('방문객')}}
+              imageSrc='/User.svg'>방문객</Sidebutton>
+        </Mobabar>
 
         
         <Main>
@@ -267,51 +269,50 @@ function App() {
             
           }
           
-          {homemode === '조명' && 
+          {homemode === '모드' && 
           <div>
-          <Contentbox title="조명" description="집 안 조명 제어"/>
-          <Light></Light>
-          <WriteButton data="on" label="LED 켜기 (on)" />
-          <WriteButton data="off" label="LED 끄기 (off)" />
-          {serialData ? (
-                  <p>Latest Data: {serialData}</p>
-              ) : (
-                  <p>Waiting for data...</p>
-              )}
+            <Contentbox title="모드" description="집 제어 환경 설정"/>
+          
+          </div>
+          }
+
+          {homemode === '센서' && 
+          <div>
+            <Contentbox title="센서" description="집 안 센서 정보"/>
+            
+              <Tempbox temp={temp} humi={humi} co2={co2} light={light}></Tempbox>
+
+          </div>
+          }
+
+          {homemode === '제어' && 
+          <div>
+            <Contentbox title="제어" description="집 안 장치 제어"/>
+            <Light></Light>
+            <WindowFan></WindowFan>
+
+            <WriteButton data="on" label="LED 켜기 (on)" />
+            <WriteButton data="off" label="LED 끄기 (off)" />
+            {serialData ? (
+                    <p>Latest Data: {serialData}</p>
+                ) : (
+                    <p>Waiting for data...</p>
+                )}
           </div>
           }
 
           {homemode === '현관' && 
           <div>
-          <Contentbox title="현관" description="현관 CCTV 관찰"/>
-          <WebcamStreamClient/>
+            <Contentbox title="현관" description="현관 CCTV 관찰"/>
+            <WebcamStreamClient/>
           </div>
           }
-          
-          {homemode === '환기' && 
-          <div>
-          <Contentbox title="환기" description="온도, co2 농도에 따라 환기"/>
-          <Tempbox temp={temp} humi={humi}></Tempbox>
-          <WindowFan></WindowFan>
-          
-          
-          </div>
-          }
-        
 
           {homemode === '방문객' && 
           <div>
-          <Contentbox title="방문객" description="현관 CCTV로 방문객 감지"/>
-          <Visit></Visit>
+            <Contentbox title="방문객" description="현관 CCTV로 방문객 감지"/>
+            <Visit></Visit>
 
-          </div>
-          }
-
-          {homemode === '기타' && 
-          <div>
-            <input type="text" value={message}
-          onChange={(e) => setMessage(e.target.value)}/>
-          <button onClick={sendMessage} style={{ height: '50px', width: '200px' }}></button>          
           </div>
           }
           

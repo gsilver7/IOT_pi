@@ -1,11 +1,11 @@
 // pi-client.js - 라즈베리파이에서 실행
+
 const io = require('socket.io-client');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
-const { spawn } = require('child_process'); // 추가
+const { spawn } = require('child_process');
 
-
-const SERIAL_PORT = '/dev/ttyUSB0'; // 또는 '/dev/ttyACM0'
+const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
 const BAUD_RATE = 9600;
 
 // 시리얼 포트 초기화
@@ -15,7 +15,6 @@ const port = new SerialPort({
 }); 
 
 const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
-
 
 // AWS WAS 주소
 const AWS_SERVER = 'http://kmj.shscript.com:8080';
@@ -31,13 +30,13 @@ const socket = io(`${AWS_SERVER}`, {
 // 연결 성공
 socket.on('connect', () => {
   console.log('✅ AWS 서버 연결 성공:', socket.id);
-  startWebcamStreaming(); // 👈 여기!
+  startWebcamStreaming();
 });
 
 // 연결 끊김
 socket.on('disconnect', (reason) => {
   console.warn('❌ AWS 서버 연결 끊김:', reason);
-  stopWebcamStreaming(); // 👈 여기!
+  stopWebcamStreaming();
 });
 
 // 연결 에러
@@ -50,7 +49,7 @@ socket.on('command', (data) => {
   console.log('📥 명령 수신:', data);
   
   if (data.command === 'stop-webcam') {
-    stopWebcamStreaming(); // 👈 이런 식으로 추가 가능
+    stopWebcamStreaming();
   }
   
   if (data.command) {
@@ -68,6 +67,9 @@ port.on('error', (err) => {
   console.error('🔴 시리얼 포트 에러:', err.message);
 });
 
+// 센서 데이터 저장 변수
+let latestAduData = { temp: 0, humi: 0 };
+
 // 아두이노로부터 데이터 수신
 parser.on('data', (data) => {
   console.log('📥 아두이노 데이터:', data);
@@ -78,6 +80,7 @@ parser.on('data', (data) => {
     aduData.timestamp = new Date().toISOString();
     aduData.deviceId = 'pi-001';
     
+    latestAduData = { temp: aduData.temp, humi: aduData.humi };
     sendaduData(aduData);
   } catch (e) {
     // 일반 텍스트로 받는 경우 (예: "25.5,60.2")
@@ -90,11 +93,11 @@ parser.on('data', (data) => {
         deviceId: 'pi-001'
       };
       
+      latestAduData = { temp: aduData.temp, humi: aduData.humi };
       sendaduData(aduData);
     }
   }
 });
-
 
 // 센서 데이터 전송 함수
 function sendaduData(data) {
@@ -106,11 +109,11 @@ function sendaduData(data) {
 // 예시: 3초마다 센서 데이터 전송
 setInterval(() => {
   const aduData = {
-  temp: 'temperature',
-  humi: 'humidity',
-  timestamp: "2025-11-27T...",
-  deviceId: 'pi-001'
-};
+    temp: latestAduData.temp,
+    humi: latestAduData.humi,
+    timestamp: new Date().toISOString(),
+    deviceId: 'pi-001'
+  };
   
   sendaduData(aduData);
 }, 3000);
@@ -118,18 +121,20 @@ setInterval(() => {
 let ffmpegProcess = null;
 
 function startWebcamStreaming() {
+  if (ffmpegProcess) return;
+  
   console.log('📹 웹캠 스트리밍 시작...');
   
   // ffmpeg로 웹캠 캡처
   ffmpegProcess = spawn('ffmpeg', [
     '-f', 'v4l2',
-    '-framerate', '15',     // 웹소켓 부하 줄이려면 프레임 좀 낮추는 게 좋음
+    '-framerate', '15',
     '-video_size', '640x480',
     '-i', '/dev/video0',
-    '-f', 'mjpeg',          // 👈 핵심: mpegts 말고 mjpeg로 변경!
-    '-q:v', '5',            // 화질 (1~31, 낮을수록 고화질)
+    '-f', 'mjpeg',
+    '-q:v', '5',
     '-'
-]);
+  ]);
 
   let frameBuffer = Buffer.alloc(0);
 
@@ -164,6 +169,7 @@ function startWebcamStreaming() {
 
   ffmpegProcess.on('close', (code) => {
     console.log('📹 웹캠 스트리밍 종료:', code);
+    ffmpegProcess = null;
   });
 
   ffmpegProcess.on('error', (error) => {
@@ -182,7 +188,7 @@ function stopWebcamStreaming() {
 // Ctrl+C로 종료 시 정리
 process.on('SIGINT', () => {
   console.log('\n종료 중...');
-  stopWebcamStreaming(); // 👈 여기!
+  stopWebcamStreaming();
   port.close();
   socket.disconnect();
   process.exit();
