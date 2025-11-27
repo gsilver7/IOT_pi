@@ -156,7 +156,7 @@ function App() {
 
   useEffect(() => {
     controlMessage = {
-      light: !hlight,
+      light: hlight,
       w: w1,
       fan: fan1
     };
@@ -169,7 +169,7 @@ function App() {
   useEffect(() => {
     controlMessage = {
       light: hlight,
-      w: !w1,
+      w: w1,
       fan: fan1
     };
     console.log('w1 상태 변경:', hlight);
@@ -182,7 +182,7 @@ function App() {
     controlMessage = {
       light: hlight,
       w: w1,
-      fan: !fan1
+      fan: fan1
     };
     console.log('hlight 상태 변경:', hlight);
     if (socket) {
