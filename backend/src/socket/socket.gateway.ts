@@ -19,6 +19,12 @@ interface AduDataDto {
   deviceId: string;
 }
 
+interface ControlMessage {
+  light: boolean;
+  w: boolean;
+  fan: boolean;
+}
+
 
 @WebSocketGateway({
   cors: {
@@ -46,13 +52,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // 'message' 이벤트를 받으면 실행
-  @SubscribeMessage('message')
+  @SubscribeMessage('control')
     // @MessageBody()와 @ConnectedSocket() 데코레이터를 추가합니다.
     handleMessage(
-      @MessageBody() payload: string,
+      @MessageBody() payload:ControlMessage,
       @ConnectedSocket() client: Socket,
     ): void {
-    console.log(`Received message from ${client.id}: ${payload}`);
+    console.log(`[${client.id}] 센서 데이터 수신:`, payload);
+    console.log(`창문: ${payload.w}, 조명: ${payload.light}, 팬: ${payload.fan}`);
+    client.broadcast.emit('adu-data', payload);
   }
 
   @SubscribeMessage('adu-data') // 클라이언트가 보낼 이벤트 이름과 일치해야 함

@@ -1,6 +1,7 @@
 // App.js
 import useSocket from './hooks/useSocket';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
+import { OnoffContext } from './context/OnoffContext';
 import WebcamStreamClient from './components/WebcamStreamClient';
 import WeatherDisplay from './components/WeatherDisplay';
 import Grid from './components/Grid';
@@ -19,6 +20,8 @@ import Visit from './components/layout/Visit';
 interface AduDataDto {
   temp: string;
   humi: string;
+  co2: string;
+  light: string;
   timestamp: string;
   deviceId: string;
 }
@@ -128,10 +131,22 @@ const Over = styled.div`
 `;
 
 function App() {
-  const [homemode, setHomemode] = useState<string>('홈');
+  interface ControlMessage {
+    light: boolean;
+    w: boolean;
+    fan: boolean;
+}
+  const controlMessage:ControlMessage = {
+    light : false,
+    w : false,
+    fan : false,
+  }
 
-  const [message, setMessage] = useState(''); // 입력창의 내용을 관리할 state
   const socket = useSocket(); // 이렇게 반환 값을 변수에 저장해야 합니다.
+  const { hlight, w1, fan1 } = useContext(OnoffContext);
+
+  const [homemode, setHomemode] = useState<string>('홈');
+  const [message, setMessage] = useState<ControlMessage>(controlMessage); // 입력창의 내용을 관리할 state
   const [serverTime, setServerTime] = useState('loading');
   const [serialData] = useState<string | null>(null);
   const [temp, setTemp] = useState<string>('loading');
@@ -140,14 +155,33 @@ function App() {
   const [light, setLight] = useState<string>('loading');
   const [toggle, setToggle] = useState<boolean>(false);
 
-  const sendMessage = () => {
-    // 소켓이 연결되어 있고, 메시지가 비어있지 않을 때만 전송
-    if (socket && message.trim()) {
-      // 백엔드의 @SubscribeMessage('message')를 호출합니다.
-      socket.emit('message', message);
-      setMessage(''); // 메시지 전송 후 입력창 비우기
+  useEffect(() => {
+    controlMessage.light = hlight;
+    console.log('hlight 상태 변경:', hlight);
+    setMessage(controlMessage);
+    if (socket) {
+      socket.emit('control', message);
     }
-  };
+  }, [hlight]); // hlight가 변경될 때마다 실행
+  
+  useEffect(() => {
+    controlMessage.w = w1;
+    console.log('w1 상태 변경:', hlight);
+    setMessage(controlMessage);
+    if (socket) {
+      socket.emit('control', message);
+    }
+  }, [w1]);
+
+  useEffect(() => {
+    controlMessage.fan = fan1;
+    console.log('hlight 상태 변경:', hlight);
+    setMessage(controlMessage);
+    if (socket) {
+      socket.emit('control', message);
+    }
+  }, [fan1]);
+
   // 이제 'socket' 변수를 사용해서 통신할 수 있습니다.
   useEffect(() => {
     const onDisconnect = (reason: string) => {
@@ -185,10 +219,10 @@ function App() {
     };
 
     const handleData = (payload: AduDataDto) => {
-      console.log('온도 :', payload.temp);
       setTemp(payload.temp);
-      console.log('습도 :', payload.humi);
       setHumi(payload.humi);
+      setCo2(payload.co2);
+      setLight(payload.light);      
     }
 
     if (socket) { // socket이 성공적으로 연결되었을 때
