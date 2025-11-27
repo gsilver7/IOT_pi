@@ -164,7 +164,7 @@ function App() {
     console.log('hlight 상태 변경:', hlight);
     setMessage(newControlMessage);
     if (socket) {
-      socket.emit('control', message);
+      socket.emit('control', newControlMessage);
     }
   }, [hlight]); // hlight가 변경될 때마다 실행
   
@@ -177,7 +177,7 @@ function App() {
     console.log('w1 상태 변경:', hlight);
     setMessage(newControlMessage);
     if (socket) {
-      socket.emit('control', message);
+      socket.emit('control', newControlMessage);
     }
   }, [w1]);
 
@@ -190,7 +190,7 @@ function App() {
     console.log('hlight 상태 변경:', hlight);
     setMessage(newControlMessage);
     if (socket) {
-      socket.emit('control', message);
+      socket.emit('control', newControlMessage);
     }
   }, [fan1]);
 
