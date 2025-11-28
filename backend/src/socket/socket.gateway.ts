@@ -15,6 +15,8 @@ import { OnEvent } from '@nestjs/event-emitter';
 interface AduDataDto {
   temp: string;
   humi: string;
+  co2: string;
+  light: string;
   timestamp: string;
   deviceId: string;
 }
