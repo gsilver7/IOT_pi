@@ -89,11 +89,13 @@ parser.on('data', (data) => {
       const aduData = {
         temp: parseFloat(values[0]),
         humi: parseFloat(values[1]),
+        co2: parseFloat(values[2]),
+        light: parseFloat(values[3]),
         timestamp: new Date().toISOString(),
         deviceId: 'pi-001'
       };
       
-      latestAduData = { temp: aduData.temp, humi: aduData.humi };
+      latestAduData = { temp: aduData.temp, humi: aduData.humi, co2: aduData.co2, light: aduData.light};
       sendaduData(aduData);
     }
   }
@@ -111,6 +113,8 @@ setInterval(() => {
   const aduData = {
     temp: latestAduData.temp,
     humi: latestAduData.humi,
+    co2: latestAduData.co2,
+    light: latestAduData.light,
     timestamp: new Date().toISOString(),
     deviceId: 'pi-001'
   };
