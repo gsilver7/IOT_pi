@@ -72,7 +72,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): void {
     // 2. 이제 payload.temp 처럼 점(.) 찍어서 데이터에 접근 가능합니다.
     console.log(`[${client.id}] 센서 데이터 수신:`, payload);
-    console.log(`온도: ${payload.temp}, 습도: ${payload.humi}`);
+    console.log(`온도: ${payload.temp}, 습도: ${payload.humi}, co2: ${payload.co2}, 조도: ${payload.light}`);
     client.broadcast.emit('adu-data', payload);
   }
 
