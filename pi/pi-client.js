@@ -68,7 +68,7 @@ port.on('error', (err) => {
 });
 
 // 센서 데이터 저장 변수
-let latestAduData = { temp: 0, humi: 0 };
+let latestAduData = { temp: 0, humi: 0, co2: 0, light: 0};
 
 // 아두이노로부터 데이터 수신
 parser.on('data', (data) => {
@@ -80,7 +80,7 @@ parser.on('data', (data) => {
     aduData.timestamp = new Date().toISOString();
     aduData.deviceId = 'pi-001';
     
-    latestAduData = { temp: aduData.temp, humi: aduData.humi };
+    latestAduData = { temp: aduData.temp, humi: aduData.humi, co2: aduData.co2, light: aduData.light};
     sendaduData(aduData);
   } catch (e) {
     // 일반 텍스트로 받는 경우 (예: "25.5,60.2")
