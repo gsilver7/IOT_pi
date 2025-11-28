@@ -60,7 +60,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     ): void {
     console.log(`[${client.id}] 센서 데이터 수신:`, payload);
     console.log(`창문: ${payload.w}, 조명: ${payload.light}, 팬: ${payload.fan}`);
-    client.broadcast.emit('adu-data', payload);
+    client.broadcast.emit('control', payload);
   }
 
   @SubscribeMessage('adu-data') // 클라이언트가 보낼 이벤트 이름과 일치해야 함

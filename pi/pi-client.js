@@ -118,6 +118,18 @@ setInterval(() => {
   sendaduData(aduData);
 }, 3000);
 
+// 🆕 프론트엔드로부터 제어 명령 수신
+socket.on('control', (data) => {
+  console.log('📥 제어 명령 수신:', data);
+  
+  // JSON을 문자열로 변환하여 아두이노로 전송
+  const jsonString = JSON.stringify(data);
+  port.write(jsonString + '\n');
+  
+  console.log('📤 아두이노로 전송:', jsonString);
+  console.log(data);
+});
+
 let ffmpegProcess = null;
 
 function startWebcamStreaming() {
