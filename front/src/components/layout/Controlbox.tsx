@@ -19,15 +19,20 @@ const Sdiv = styled.div`
   grid-template-rows: 1fr 1fr 0.1fr;
   column-gap: 3%;
   row-gap: 3%;
-  height: 70vh;
-
+  height: 90vh;
+  @media (max-width: 1000px) {
+    height: 60vh;
+  }
   @media (max-width: 800px) {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(5, auto);
-    height: 140vh;
+    height: 170vh;
     row-gap: 1%;
   }
   @media (max-width: 600px) {
+    height: 150vh;
+  }
+  @media (max-width: 400px) {
     height: 100vh;
   }
 `;
