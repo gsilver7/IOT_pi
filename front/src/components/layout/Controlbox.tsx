@@ -21,11 +21,14 @@ const Sdiv = styled.div`
   row-gap: 3%;
   height: 70vh;
 
-  @media (max-width: 768px) {
+  @media (max-width: 800px) {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(5, auto);
     height: 140vh;
     row-gap: 1%;
+  }
+  @media (max-width: 600px) {
+    height: 100vh;
   }
 `;
 
@@ -34,7 +37,28 @@ const Indiv = styled.div`
   border-radius: 10px;
   margin-bottom: 5%;
   position: relative;
-  height: 20vh;
+  height: 25vh;
+  @media (max-width: 1200px) {
+    height: 18vh;
+  }
+  @media (max-width: 800px) {
+    height: 23vh;
+  }
+  @media (max-width: 700px) {
+    height: 22vh;
+  }
+  @media (max-width: 580px) {
+    height: 21vh;
+  }
+  @media (max-width: 550px) {
+    height: 18vh;
+  }
+  @media (max-width: 500px) {
+    height: 16vh;
+  }
+  @media (max-width: 400px) {
+    height: 13vh;
+  }
 `;
 
 const Controlbox = () => {
