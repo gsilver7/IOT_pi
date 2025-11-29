@@ -40,7 +40,7 @@ const Sdiv = styled.div`
 const Indiv = styled.div`
   border: 1px solid #e6e7e9;
   border-radius: 10px;
-  margin-bottom: 5%;
+  padding-bottom: 20%;
   position: relative;
   height: 25vh;
   @media (max-width: 1200px) {
