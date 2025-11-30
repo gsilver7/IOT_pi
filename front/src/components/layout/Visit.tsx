@@ -58,7 +58,7 @@ const Light = () => {
       <Indiv>
         <Sh2>도어락 제어</Sh2>
           <ToggleImg buttonimg={door ? '/toggle/Dooron.svg' : '/toggle/Dooroff.svg'} ttt={door}></ToggleImg>
-        <ToggleButton onClick={()=>setDoor(prev => !prev)} ttt={door}></ToggleButton>
+        <ToggleButton onClick={() => setDoor((prev) => (prev === 0 ? 1 : 0))} ttt={door}></ToggleButton>
       </Indiv>
     </Sdiv>
   )

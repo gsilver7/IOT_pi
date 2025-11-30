@@ -91,7 +91,7 @@ const Controlbox = () => {
           ttt={hlight}
         ></ToggleImg>
         <ToggleButton
-          onClick={() => setHlight((prev) => !prev)}
+          onClick={() => setHlight((prev) => (prev === 0 ? 1 : 0))}
           ttt={hlight}
         ></ToggleButton>
       </Indiv>
@@ -101,7 +101,7 @@ const Controlbox = () => {
           buttonimg={glight ? "/toggle/Lighton.svg" : "/toggle/Lightoff.svg"}
           ttt={glight}
         ></ToggleImg>
-        <ToggleButton onClick={() => setGlight((prev) => !prev)} ttt={glight} />
+        <ToggleButton onClick={() => setGlight((prev) => (prev === 0 ? 1 : 0))} ttt={glight} />
       </Indiv>
       <Indiv>
         <Sh2>창문</Sh2>
@@ -110,7 +110,7 @@ const Controlbox = () => {
           ttt={win}
         ></ToggleImg>
         <ToggleButton
-          onClick={() => setWin((prev) => !prev)}
+          onClick={() => setWin((prev) => (prev === 0 ? 1 : 0))}
           ttt={win}
         ></ToggleButton>
       </Indiv>
@@ -121,7 +121,7 @@ const Controlbox = () => {
           ttt={fan}
         ></ToggleImg>
         <ToggleButton
-          onClick={() => setFan((prev) => !prev)}
+          onClick={() => setFan((prev) => (prev === 0 ? 1 : 0))}
           ttt={fan}
         ></ToggleButton>
       </Indiv>
@@ -132,7 +132,7 @@ const Controlbox = () => {
           ttt={hum}
         ></ToggleImg>
         <ToggleButton
-          onClick={() => setHum((prev) => !prev)}
+          onClick={() => setHum((prev) => (prev === 0 ? 1 : 0))}
           ttt={hum}
         ></ToggleButton>
       </Indiv>
@@ -143,7 +143,7 @@ const Controlbox = () => {
           ttt={hit}
         ></ToggleImg>
         <ToggleButton
-          onClick={() => setHit((prev) => !prev)}
+          onClick={() => setHit((prev) => (prev === 0 ? 1 : 0))}
           ttt={hit}
         ></ToggleButton>
       </Indiv>
