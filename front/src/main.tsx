@@ -17,6 +17,7 @@ import globalStyles from "./styles/globalStyles";
 import Home from "./pages/Home.tsx";
 import Mode from "./pages/Mode.tsx";
 import { Socketmain } from "./Sockermain.tsx";
+import Refresh from "./components/Refresh.tsx";
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const token = localStorage.getItem("token");
@@ -30,6 +31,7 @@ export const RootComponent = () => {
 
   return (
     <BrowserRouter>
+      <Refresh />
       <GridContextProvider>
         <OnoffContextProvider>
           <Socketmain />
