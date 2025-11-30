@@ -17,6 +17,7 @@ const Info = () => {
   if (!python) {
     setPython(true);
   }
+  else {setPython(false);}
 }}/>
     </div>
   );

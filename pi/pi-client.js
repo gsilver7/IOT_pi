@@ -7,8 +7,8 @@ const { spawn } = require('child_process');
 
 const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
 const BAUD_RATE = 9600;
-const PYTHON_VENV_PATH = '/home/pi/myenv/bin/python3'; // 가상환경 경로
-const PYTHON_SCRIPT_PATH = '/home/pi/scripts/my_script.py'; // 실행할 스크립트 경로
+const PYTHON_VENV_PATH = '/home/rlaaudwns/web/backend/python/bin/python3'; // 가상환경 경로
+const PYTHON_SCRIPT_PATH = '/home/rlaaudwns/web/pi/face_main.py'; // 실행할 스크립트 경로
 
 // 시리얼 포트 초기화
 const port = new SerialPort({
@@ -19,7 +19,7 @@ const port = new SerialPort({
 const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
 
 // AWS WAS 주소
-const AWS_SERVER = 'http://kmj.shscript.com:8080';
+const AWS_SERVER = 'https://kmj.shscript.com';
 
 // /sensor namespace로 연결
 const socket = io(`${AWS_SERVER}`, {

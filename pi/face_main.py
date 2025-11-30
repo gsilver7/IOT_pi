@@ -1,3 +1,4 @@
+import os
 from face_recognition_module import FaceVectorExtractor, VectorStorage, FaceComparator
 
 # 현재 이 파이썬 파일이 있는 폴더의 경로를 구함
