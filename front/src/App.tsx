@@ -14,6 +14,7 @@ import globalStyles from "./styles/globalStyles";
 import Controlbox from "./components/layout/Controlbox";
 import Visit from "./components/layout/Visit";
 import ModeButton from "./components/layout/Modebutton";
+import { LogoutButton } from "./components/Logoutbutton";
 
 interface AduDataDto {
   temp: string;
@@ -314,6 +315,14 @@ function App() {
         >
           방문객
         </Sidebutton>
+        <Sidebutton
+          onClick={() => {
+            setHomemode("정보");
+          }}
+          imageSrc="/User.svg"
+        >
+          방문객
+        </Sidebutton>
       </Sidebar>
 
       <Mobabar $toggle={toggle}>
@@ -361,6 +370,14 @@ function App() {
         <Sidebutton
           onClick={() => {
             setHomemode("방문객");
+          }}
+          imageSrc="/User.svg"
+        >
+          방문객
+        </Sidebutton>
+        <Sidebutton
+          onClick={() => {
+            setHomemode("정보");
           }}
           imageSrc="/User.svg"
         >
@@ -433,6 +450,13 @@ function App() {
                 description="현관 CCTV로 방문객 감지"
               />
               <Visit></Visit>
+            </div>
+          )}
+
+          {homemode === "정보" && (
+            <div>
+              <Contentbox title="정보" description="내 정보 관리" />
+              <LogoutButton />
             </div>
           )}
         </Div>

@@ -4,6 +4,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VerificationCode } from 'src/entities/verification-code.entity';
@@ -12,6 +13,8 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
+import Redis from 'ioredis';
+import { InjectRedis } from '@nestjs-modules/ioredis'; // 또는 사용 중인 Redis 모듈의 데코레이터
 
 export class RegisterDto {
   email: string;
@@ -31,6 +34,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private readonly mailerService: MailerService,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
 
   /**
@@ -201,11 +205,57 @@ export class AuthService {
 
     // 3. JWT 토큰 발급
     const payload = { email: user.email, sub: user.id, name: user.name };
+    const accessToken = this.jwtService.sign(payload); // 변수로 분리함
+
+    const refreshToken = uuidv4();
+
+    await this.redis.set(`refresh:${user.id}`, refreshToken, 'EX', 1209600);
+
+    console.log(`Refresh Token 저장 완료: User ${user.id}`);
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: accessToken,
+      refresh_token: refreshToken, // [추가됨]
       userId: user.id,
       email: user.email,
       name: user.name,
     };
+  }u
+
+  async refresh(userId: string, refreshToken: string) {
+    // 1. Redis에서 유저의 리프레시 토큰 가져오기
+    const storedToken = await this.redis.get(`refresh:${userId}`);
+
+    // 2. 토큰 검증 (Redis에 없거나, 보낸 거랑 다르면 에러)
+    if (!storedToken || storedToken !== refreshToken) {
+      throw new UnauthorizedException(
+        '리프레시 토큰이 유효하지 않거나 만료되었습니다.',
+      );
+    }
+
+    // 3. 유저 정보 다시 조회 (선택사항, 페이로드 채우기 위함)
+    // (DB 조회 없이 이전 페이로드를 재활용해도 되지만, 안전하게 DB 확인 권장)
+    const user = await this.userRepository.findOne({
+      where: { id: Number(userId) },
+    }); // ID 타입에 맞춰 수정하세요
+    if (!user) {
+      throw new UnauthorizedException('유저를 찾을 수 없습니다.');
+    }
+
+    // 4. 새 Access Token 발급
+    const payload = { email: user.email, sub: user.id, name: user.name };
+    const newAccessToken = this.jwtService.sign(payload);
+
+    // (선택: 리프레시 토큰도 새로 바꿔줄 거면 여기서 uuid 새로 뽑아서 redis.set 다시 하면 됨 - RTR 방식)
+
+    return {
+      access_token: newAccessToken,
+      // refresh_token: ... (RTR 적용 시 새거 반환)
+    };
+  }
+  async logout(userId: string) {
+    // Redis에서 해당 유저의 리프레시 토큰 삭제
+    await this.redis.del(`refresh:${userId}`);
+    return { message: '로그아웃 성공' };
   }
 }
