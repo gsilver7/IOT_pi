@@ -1,6 +1,8 @@
 // pi-client.js - 라즈베리파이에서 실행
 
 const io = require('socket.io-client');
+const path = require('path');
+const fs = require('fs');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 const { spawn } = require('child_process');
@@ -64,11 +66,12 @@ socket.on('python', (data) => {
 
   const scriptPath = data.scriptPath || PYTHON_SCRIPT_PATH;
   const venvPath = data.venvPath || PYTHON_VENV_PATH;
-  const userId = data.userId || 'unknown'; // 유저 ID (파일명이나 인자로 사용)
+  const userId = data.userId || 'unknown';
 
   // 1. 이미지 데이터 처리
   if (!data.image) {
     console.error('❌ 이미지가 없습니다.');
+    socket.emit('python-result', { success: false, error: 'No image data' });
     return;
   }
 
@@ -77,10 +80,11 @@ socket.on('python', (data) => {
     const base64Data = data.image.replace(/^data:image\/\w+;base64,/, "");
     const imgBuffer = Buffer.from(base64Data, 'base64');
 
-    // 2. 파일 저장 경로 설정 (현재 폴더에 저장)
-    // 파일명 중복 방지를 위해 timestamp 사용 (예: face_1701234567890.jpg)
-    const fileName = `face_${Date.now()}.jpg`; 
-    const filePath = path.join(__dirname, fileName); // 현재 실행 위치에 저장
+    console.log(`📊 이미지 버퍼 크기: ${imgBuffer.length} bytes`);
+
+    // 2. 파일 저장 경로 설정
+    const fileName = `face_${userId}_${Date.now()}.jpg`; 
+    const filePath = path.join(__dirname, fileName);
 
     console.log(`💾 이미지 저장 시작: ${filePath}`);
 
@@ -92,13 +96,13 @@ socket.on('python', (data) => {
         return;
       }
 
-      console.log('✅ 이미지 저장 완료. Python 실행 시작...');
+      // 저장된 파일 크기 확인
+      const stats = fs.statSync(filePath);
+      console.log(`✅ 이미지 저장 완료 (크기: ${stats.size} bytes)`);
 
-      // ---------------------------------------------------------
-      // [핵심] 4. 저장이 완료되면 Python 실행
-      // ---------------------------------------------------------
-      // 인자로 [스크립트경로, 이미지경로, 유저ID] 를 넘깁니다.
-      const args = [scriptPath, filePath, userId]; 
+      // 4. Python 실행
+      const args = ['-u', scriptPath, filePath, userId]; 
+      console.log(`🐍 Python 실행: ${venvPath} ${args.join(' ')}`);
       
       const pythonProcess = spawn(venvPath, args);
 
@@ -107,49 +111,86 @@ socket.on('python', (data) => {
 
       // 표준 출력 수신
       pythonProcess.stdout.on('data', (output) => {
-        resultBuffer += output.toString();
+        const text = output.toString();
+        console.log(`[Python stdout] ${text}`);
+        resultBuffer += text;
       });
 
       // 에러 출력 수신
       pythonProcess.stderr.on('data', (error) => {
-        errorBuffer += error.toString();
+        const text = error.toString();
+        console.error(`[Python stderr] ${text}`);
+        errorBuffer += text;
       });
 
       // 프로세스 종료 처리
       pythonProcess.on('close', (code) => {
         console.log(`🐍 Python 프로세스 종료 (코드: ${code})`);
+        console.log(`📝 전체 출력 길이: ${resultBuffer.length} chars`);
+        console.log(`📝 전체 에러 길이: ${errorBuffer.length} chars`);
 
-        // (선택사항) 파이썬 처리가 끝났으니 이미지를 삭제할까요?
-        // fs.unlink(filePath, () => console.log('🗑️ 임시 이미지 삭제 완료'));
+        // 임시 이미지 삭제
+        fs.unlink(filePath, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error('🗑️ 임시 이미지 삭제 실패:', unlinkErr);
+          } else {
+            console.log('🗑️ 임시 이미지 삭제 완료');
+          }
+        });
 
         if (code === 0) {
-          console.log('🐍 Python 최종 출력:', resultBuffer);
+          console.log('✅ Python 실행 성공');
+
+          // ----------------------------------------------------------------
+          // [추가된 로직] 로그에서 벡터 저장 경로 추출하기
+          // ----------------------------------------------------------------
+          let vectorPath = null;
+          
+          // 파이썬 로그 예시: "✓ 벡터 저장 완료: /home/.../face_vectors/user123.pkl"
+          // 정규식으로 "벡터 저장 완료:" 뒤에 있는 경로 부분을 잡아냅니다.
+          const match = resultBuffer.match(/벡터 저장 완료:\s*(.+)/);
+
+          if (match && match[1]) {
+            vectorPath = match[1].trim(); // 로그에서 추출한 실제 경로
+          } else {
+            // 만약 로그 파싱에 실패했다면, 요청받은 기본 경로와 ID로 추정치를 넣습니다.
+            // (파이썬 쪽 저장 로직이 .pkl 이라고 가정)
+            vectorPath = `/home/rlaaudwns/web/backend/src/python/face_vectors/${userId}.pkl`;
+          }
+
+          console.log(`📍 추출된 벡터 경로: ${vectorPath}`);
+
+          // 결과 전송
           socket.emit('python-result', {
             deviceId: 'pi-001',
             success: true,
+            userId: userId,
             output: resultBuffer.trim(),
+            vector: vectorPath, // 👈 여기에 벡터 경로 추가됨!
             timestamp: new Date().toISOString()
           });
+          console.log("전송 잘됨");
         } else {
-          console.error('🔴 Python 에러:', errorBuffer);
+          console.error('❌ Python 실행 실패 (종료 코드:', code, ')');
           socket.emit('python-result', {
             deviceId: 'pi-001',
             success: false,
-            error: errorBuffer,
+            error: errorBuffer || `Process exited with code ${code}`,
             timestamp: new Date().toISOString()
           });
         }
       });
 
       pythonProcess.on('error', (err) => {
-        console.error('🔴 Python 실행 에러:', err.message);
+        console.error('🔴 Python 프로세스 실행 에러:', err);
         socket.emit('python-result', { success: false, error: err.message });
       });
 
     }); // end of fs.writeFile
 
   } catch (e) {
-    console.error('이미지 처리 중 예외 발생:', e);
+    console.error('❌ 이미지 처리 중 예외 발생:', e);
+    socket.emit('python-result', { success: false, error: e.message });
   }
 });
 
