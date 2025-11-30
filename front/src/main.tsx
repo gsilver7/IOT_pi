@@ -10,6 +10,12 @@ import Info from "./pages/Info.tsx";
 import Visitor from "./pages/Visitor.tsx";
 import Door from "./pages/Door.tsx";
 import Control from "./pages/Control.tsx";
+import MainLayout from "./MainLayout.tsx";
+import { useState } from "react";
+import { Global } from "@emotion/react";
+import globalStyles from "./styles/globalStyles";
+import Home from "./pages/Home.tsx";
+import Mode from "./pages/Mode.tsx";
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const token = localStorage.getItem("token");
@@ -17,56 +23,42 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const RootComponent = () => {
+  const [toggle, setToggle] = useState<boolean>(false);
+  const [homemode, setHomemode] = useState<string>("홈");
   // 1. useState를 사용하여 gridCoords 상태를 관리합니다.
 
   return (
     <BrowserRouter>
       <GridContextProvider>
         <OnoffContextProvider>
+          <Global styles={globalStyles} />
           <Routes>
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route
+              element={
+                <PrivateRoute>
+                  <MainLayout
+                    toggle={toggle}
+                    setToggle={setToggle}
+                    homemode={homemode}
+                    setHomemode={setHomemode}
+                  />
+                </PrivateRoute>
+              }
+            >
+              {/* 자식 Route들: MainLayout의 <Outlet /> 자리에 들어갑니다.
+                 path="/"는 index로 표시해도 됩니다.
+              */}
 
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <App />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/info"
-              element={
-                <PrivateRoute>
-                  <Info />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/visitor"
-              element={
-                <PrivateRoute>
-                  <Visitor />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/door"
-              element={
-                <PrivateRoute>
-                  <Door />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/control"
-              element={
-                <PrivateRoute>
-                  <Control />
-                </PrivateRoute>
-              }
-            />
+              <Route path="/" element={<Home />} />
+              <Route path="/mode" element={<Mode />} />
+              <Route path="/info" element={<Info />} />
+              <Route path="/sensor" element={<App />} />
+              <Route path="/visitor" element={<Visitor />} />
+              <Route path="/door" element={<Door />} />
+              <Route path="/control" element={<Control />} />
+            </Route>
           </Routes>
         </OnoffContextProvider>
       </GridContextProvider>

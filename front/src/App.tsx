@@ -2,16 +2,8 @@
 import useSocket from "./hooks/useSocket";
 import { useEffect, useState, useContext } from "react";
 import { OnoffContext } from "./context/OnoffContext";
-import WeatherDisplay from "./components/WeatherDisplay";
-import Grid from "./components/Grid";
-import styled from "@emotion/styled";
-import { Global } from "@emotion/react";
-import Sidebutton from "./components/layout/Sidebutton";
 import Contentbox from "./components/layout/Contentbox";
 import Tempbox from "./components/layout/Tempbox";
-import globalStyles from "./styles/globalStyles";
-import ModeButton from "./components/layout/Modebutton";
-import { useNavigate } from "react-router-dom";
 
 interface AduDataDto {
   temp: string;
@@ -22,147 +14,7 @@ interface AduDataDto {
   deviceId: string;
 }
 
-const Sidediv = styled.div`
-  height: 6%;
-  user-select: none;
-  padding-left: 12%;
-  padding-top: 12%;
-  font-weight: 700;
-  font-size: 130%;
-`;
-
-const Sidebar = styled.div`
-  border: 0;
-  padding: 0;
-  color: white;
-  border: none;
-  height: 100%;
-  width: 13%;
-  float: left;
-  background: #1a202e;
-  @media (max-width: 800px) {
-    display: none;
-  }
-  z-index: 10;
-`;
-
-const Mobabar = styled.div<{ $toggle: boolean }>`
-  border: 0;
-  padding: 0;
-  color: white;
-  border: none;
-  height: 100%;
-  width: 13%;
-  float: left;
-  background: #1a202e;
-  @media (min-width: 800px) {
-    display: none;
-  }
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 30%;
-  z-index: 20;
-  left: ${(props) => (props.$toggle ? "0" : "-300px")};
-  transition: left 0.6s ease-in-out;
-`;
-
-const Titlebar = styled.div`
-  height: 7%;
-  padding-left: 3%;
-  display: flex;
-  align-items: center;
-  font-size: 30px;
-  background-color: #ffffff;
-  box-shadow: 0px 4px 3px -2px #0000000f;
-  z-index: 10;
-  top: 0;
-  position: fixed;
-  width: 100%;
-`;
-const Sdiv = styled.div`
-  margin: 3%;
-  background-color: white;
-  padding: 3%;
-`;
-
-const Timebar = styled.div`
-  margin-left: auto;
-  margin-right: 0;
-  padding: 0;
-  padding-right: 15%;
-  @media (max-width: 800px) {
-    font-size: 20px;
-    padding-right: 6%;
-  }
-  @media (max-width: 400px) {
-    font-size: 12px;
-    padding-right: 5%;
-  }
-`;
-
-const Body = styled.body`
-  display: flex;
-  flex-direction: row;
-`;
-
-const Main = styled.main`
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-  margin: 0;
-  paddint: 0;
-`;
-const HomeModeText = styled.span`
-  @media (max-width: 800px) {
-    display: none;
-  }
-`;
-
-const Mobamenu = styled.button`
-  @media (min-width: 800px) {
-    display: none;
-  }
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-`;
-
-const Over = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  backgroundcolor: rgba(0, 0, 0, 0.5); // 반투명 배경
-  z-index: 10;
-`;
-
-const Div = styled.div`
-  position: relative;
-  top: 7%;
-  padding-top: 3%;
-`;
-
-const Modebox = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 1행 4열 */
-  gap: 16px; /* 간격 조정 가능 */
-  width: 95%;
-  padding: 3%;
-  border-radius: 10px;
-  background: #e3e3e3;
-
-  /* 모바일 뷰 (768px 이하) */
-  @media (max-width: 800px) {
-    grid-template-columns: repeat(2, 1fr); /* 2행 2열 */
-  }
-`;
-
 function App() {
-  const navigate = useNavigate();
-
   interface ControlMessage {
     light: boolean;
     w: boolean;
@@ -170,15 +22,12 @@ function App() {
   }
 
   const socket = useSocket(); // 이렇게 반환 값을 변수에 저장해야 합니다.
-  const { hlight, win, fan } = useContext(OnoffContext);
+  const { hlight, win, fan, setServerTime } = useContext(OnoffContext);
 
-  const [homemode, setHomemode] = useState<string>("홈");
-  const [serverTime, setServerTime] = useState("loading");
   const [temp, setTemp] = useState<string>("loading");
   const [humi, setHumi] = useState<string>("loading");
   const [co2, setCo2] = useState<string>("loading");
   const [light, setLight] = useState<string>("loading");
-  const [toggle, setToggle] = useState<boolean>(false);
 
   useEffect(() => {
     const controlMessage: ControlMessage = {
@@ -257,187 +106,12 @@ function App() {
     };
   }, [socket]); // socket 객체가 변경될 때마다 useEffect 실행
 
-  //'message'
-
   return (
-    <Body>
-      {toggle && <Over onClick={() => setToggle(false)} />}
-      <Global styles={globalStyles} />
-      <Sidebar>
-        <Sidediv>Smart Home</Sidediv>
+    <div>
+      <Contentbox title="센서" description="집 안 센서 정보" />
 
-        <Sidebutton
-          onClick={() => {
-            setHomemode("홈");
-          }}
-          imageSrc="/Home.svg"
-        >
-          홈
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("모드");
-          }}
-          imageSrc="/Mode.svg"
-        >
-          모드
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("센서");
-          }}
-          imageSrc="/Wind.svg"
-        >
-          센서
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("제어");
-            navigate("/control");
-          }}
-          imageSrc="/Control.svg"
-        >
-          제어
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("현관");
-            navigate("/door");
-          }}
-          imageSrc="/Video.svg"
-        >
-          현관
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("방문객");
-            navigate("/visitor");
-          }}
-          imageSrc="/User.svg"
-        >
-          방문객
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("정보");
-            navigate("/info");
-          }}
-          imageSrc="/User.svg"
-        >
-          정보
-        </Sidebutton>
-      </Sidebar>
-
-      <Mobabar $toggle={toggle}>
-        <Sidediv>Smart Home</Sidediv>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("홈");
-          }}
-          imageSrc="/Home.svg"
-        >
-          홈
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("모드");
-          }}
-          imageSrc="/Mode.svg"
-        >
-          모드
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("센서");
-          }}
-          imageSrc="/Wind.svg"
-        >
-          센서
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("제어");
-            navigate("/control");
-          }}
-          imageSrc="/Control.svg"
-        >
-          제어
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("현관");
-            navigate("/door");
-          }}
-          imageSrc="/Video.svg"
-        >
-          현관
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("방문객");
-            navigate("/visitor");
-          }}
-          imageSrc="/User.svg"
-        >
-          방문객
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
-            setHomemode("정보");
-            navigate("/info");
-          }}
-          imageSrc="/User.svg"
-        >
-          정보
-        </Sidebutton>
-      </Mobabar>
-
-      <Main>
-        <Titlebar>
-          <HomeModeText>{homemode}</HomeModeText>
-
-          <Mobamenu onClick={() => setToggle((prev) => !prev)}>
-            <img src="mobatoggle.svg" alt="아이콘" />
-          </Mobamenu>
-          <Timebar>{serverTime}</Timebar>
-        </Titlebar>
-        <Div>
-          {homemode === "홈" && (
-            <div>
-              <WeatherDisplay />
-              <Grid />
-            </div>
-          )}
-
-          {homemode === "모드" && (
-            <div>
-              <Contentbox title="모드" description="집 제어 환경 설정" />
-              <Sdiv>
-                <Modebox>
-                  <ModeButton ttt="수동" />
-                  <ModeButton ttt="재실" />
-                  <ModeButton ttt="취침" />
-                  <ModeButton ttt="외출" />
-                </Modebox>
-              </Sdiv>
-            </div>
-          )}
-
-          {homemode === "센서" && (
-            <div>
-              <Contentbox title="센서" description="집 안 센서 정보" />
-
-              <Tempbox
-                temp={temp}
-                humi={humi}
-                co2={co2}
-                light={light}
-              ></Tempbox>
-            </div>
-          )}
-        </Div>
-      </Main>
-    </Body>
+      <Tempbox temp={temp} humi={humi} co2={co2} light={light}></Tempbox>
+    </div>
   );
 }
 
