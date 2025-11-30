@@ -24,7 +24,7 @@ export class FaceController {
       this.logger.log(`User ID: ${req.user?.id}`);
       this.logger.log(`ImageData 존재 여부: ${!!imageData}`);
 
-      const userId = req.user.id; // JWT에서 유저 ID 추출
+      const userId = req.user.userId; // JWT에서 유저 ID 추출
       console.log(userId);
       const data = {
         image: imageData, // 프론트에서 받은 Base64 문자열 (data:image/jpeg;base64,...)
