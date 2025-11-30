@@ -4,7 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { EventsGateway } from '../socket/socket.gateway';
 
 
-@Controller('api/face')
+@Controller('face')
 export class FaceController {
   constructor(
     private readonly faceService: FaceService,

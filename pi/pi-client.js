@@ -218,7 +218,6 @@ function startWebcamStreaming() {
 
   ffmpegProcess.stdout.on('data', (data) => {
     frameCount++;
-    console.log(`📹 ffmpeg stdout 데이터 수신: ${data.length} bytes (프레임 ${frameCount})`);
     
     frameBuffer = Buffer.concat([frameBuffer, data]);
 
