@@ -40,7 +40,7 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
   @Post('login')
-  async login(@Body() body: { email: string; password: string }) {
+  async login(@Body() body: { email: string; password: number }) {
     return this.authService.login(body.email, body.password);
   }
 }
