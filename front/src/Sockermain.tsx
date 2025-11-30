@@ -48,11 +48,14 @@ export const Socketmain = () => {
     }
   }, [hlight, win, fan, socket]);
 
-  const python = () => {if (socket) {
-    console.log("📤 python 전송:", "python");
-    socket.emit("python", "python");
-    setPython(false);
-  }
+  useEffect(() => {
+
+    if (socket) {
+      console.log("📤 python 상태 전송:", python);
+      socket.emit("python", python);
+    }
+  }, [python]);
+
 
   // 2. 소켓 이벤트 리스너 등록 (Receive)
   useEffect(() => {
