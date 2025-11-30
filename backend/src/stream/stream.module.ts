@@ -6,5 +6,6 @@ import { StreamController } from './stream.controller';
 @Module({
   providers: [StreamGateway],
   controllers: [StreamController],
+  exports:[StreamGateway],
 })
 export class StreamModule {}

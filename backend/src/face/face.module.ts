@@ -3,11 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FaceController } from './face.controller';
 import { FaceService } from './face.service';
 import { User } from '../user/user.entity';
-import { EventsGateway } from '../socket/socket.gateway';
+import { StreamModule } from 'src/stream/stream.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User]),StreamModule],
   controllers: [FaceController],
-  providers: [FaceService,EventsGateway],
+  providers: [FaceService],
 })
 export class FaceModule {}
