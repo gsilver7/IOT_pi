@@ -92,9 +92,14 @@ const Timebar = styled.div`
   margin-left: auto;
   margin-right: 0;
   padding: 0;
-  padding-right: 5%;
+  padding-right: 15%;
   @media (max-width: 800px) {
     font-size: 20px;
+    padding-right: 6%;
+  }
+  @media (max-width: 400px) {
+    font-size: 12px;
+    padding-right: 5%;
   }
 `;
 

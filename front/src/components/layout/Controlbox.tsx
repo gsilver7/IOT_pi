@@ -19,21 +19,22 @@ const Sdiv = styled.div`
   grid-template-rows: 1fr 1fr 0.1fr;
   column-gap: 3%;
   row-gap: 3%;
-  height: 90vh;
+  height: 120vh;
+
   @media (max-width: 1000px) {
-    height: 60vh;
+    height: 90vh;
   }
   @media (max-width: 800px) {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(5, auto);
-    height: 170vh;
+    height: 220vh;
     row-gap: 1%;
   }
   @media (max-width: 600px) {
-    height: 150vh;
+    height: 200vh;
   }
   @media (max-width: 400px) {
-    height: 100vh;
+    height: 120vh;
   }
 `;
 
