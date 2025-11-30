@@ -4,12 +4,12 @@ import {
   WebSocketServer,
   SubscribeMessage,
   OnGatewayConnection,
-  OnGatewayDisconnect,  
+  OnGatewayDisconnect,
   MessageBody,
-  ConnectedSocket 
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import {Interval} from '@nestjs/schedule';
+import { Interval } from '@nestjs/schedule';
 import { OnEvent } from '@nestjs/event-emitter';
 
 interface AduDataDto {
@@ -27,11 +27,10 @@ interface ControlMessage {
   fan: boolean;
 }
 
-
 @WebSocketGateway({
   cors: {
     origin: 'https://kmj.shscript.com',
-    credentials: true, 
+    credentials: true,
     methods: ['GET', 'POST'],
   },
   transports: ['websocket', 'polling'],
@@ -55,13 +54,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // 'message' 이벤트를 받으면 실행
   @SubscribeMessage('control')
-    // @MessageBody()와 @ConnectedSocket() 데코레이터를 추가합니다.
-    handleMessage(
-      @MessageBody() payload:ControlMessage,
-      @ConnectedSocket() client: Socket,
-    ): void {
+  // @MessageBody()와 @ConnectedSocket() 데코레이터를 추가합니다.
+  handleMessage(
+    @MessageBody() payload: ControlMessage,
+    @ConnectedSocket() client: Socket,
+  ): void {
     console.log(`[${client.id}] 센서 데이터 수신:`, payload);
-    console.log(`창문: ${payload.w}, 조명: ${payload.light}, 팬: ${payload.fan}`);
+    console.log(
+      `창문: ${payload.w}, 조명: ${payload.light}, 팬: ${payload.fan}`,
+    );
     client.broadcast.emit('control', payload);
   }
 
@@ -72,15 +73,16 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): void {
     // 2. 이제 payload.temp 처럼 점(.) 찍어서 데이터에 접근 가능합니다.
     console.log(`[${client.id}] 센서 데이터 수신:`, payload);
-    console.log(`온도: ${payload.temp}, 습도: ${payload.humi}, co2: ${payload.co2}, 조도: ${payload.light}`);
+    console.log(
+      `온도: ${payload.temp}, 습도: ${payload.humi}, co2: ${payload.co2}, 조도: ${payload.light}`,
+    );
     client.broadcast.emit('adu-data', payload);
   }
-
 
   @OnEvent('tempdata')
   handleSerialData(payload: { type: string; value: string }) {
     console.log(`[SocketGateway] Broadcasting serial data: ${payload.value}`);
-    
+
     this.server.emit('tempdata', payload);
   }
 
@@ -88,9 +90,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleInterval() {
     const message = {
       type: 'server-time',
-      timestamp: new Date().toISOString(),};
-    this.server.emit('server-time',message);
+      timestamp: new Date().toISOString(),
+    };
+    this.server.emit('server-time', message);
     this.logger.log('서버 시간 방송');
   }
 }
-
