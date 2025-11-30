@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "https://kmj.shscript.com/api/auth";
 
 export default function Register() {
+  const navigate = useNavigate();
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     email: "",
@@ -119,10 +122,7 @@ export default function Register() {
   };
 
   const handleBack = () => {
-    setStep(1);
-    setVerificationCode("");
-    setError("");
-    setSuccess("");
+    navigate("/");
   };
 
   return (

@@ -3,8 +3,8 @@ import useSocket from "./hooks/useSocket";
 import { useEffect, useState, useContext } from "react";
 import { OnoffContext } from "./context/OnoffContext";
 import WebcamStreamClient from "./components/WebcamStreamClient";
-// import WeatherDisplay from "./components/WeatherDisplay";
-// import Grid from "./components/Grid";
+import WeatherDisplay from "./components/WeatherDisplay";
+import Grid from "./components/Grid";
 import styled from "@emotion/styled";
 import { Global } from "@emotion/react";
 import Sidebutton from "./components/layout/Sidebutton";
@@ -14,7 +14,6 @@ import globalStyles from "./styles/globalStyles";
 import Controlbox from "./components/layout/Controlbox";
 import Visit from "./components/layout/Visit";
 import ModeButton from "./components/layout/Modebutton";
-import Register from "./components/Register";
 
 interface AduDataDto {
   temp: string;
@@ -381,9 +380,8 @@ function App() {
         <Div>
           {homemode === "홈" && (
             <div>
-              {/* <WeatherDisplay />
-              <Grid /> */}
-              <Register></Register>
+              <WeatherDisplay />
+              <Grid />
             </div>
           )}
 

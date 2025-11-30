@@ -1,5 +1,6 @@
 import {
   Injectable,
+  UnauthorizedException,
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
@@ -8,6 +9,8 @@ import { Repository } from 'typeorm';
 import { VerificationCode } from 'src/entities/verification-code.entity';
 import { User } from '../user/user.entity';
 import { MailerService } from '@nestjs-modules/mailer';
+import { JwtService } from '@nestjs/jwt';
+import { UserService } from 'src/user/user.service';
 
 export class RegisterDto {
   email: string;
@@ -24,6 +27,8 @@ export class AuthService {
     private verificationCodeRepository: Repository<VerificationCode>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private userService: UserService,
+    private jwtService: JwtService,
     private readonly mailerService: MailerService,
   ) {}
 
@@ -170,5 +175,30 @@ export class AuthService {
       console.error('❌ 회원가입 실패:', error);
       throw new BadRequestException('회원가입에 실패했습니다.');
     }
+  }
+  async login(email: string, password: string) {
+    // 1. DB에서 유저 찾기
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다');
+    }
+
+    // 2. 비밀번호 검증
+    const isPasswordValid = await this.userService.validatePassword(
+      password,
+      user.password.toString(),
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다');
+    }
+
+    // 3. JWT 토큰 발급
+    const payload = { email: user.email, sub: user.id, name: user.name };
+    return {
+      access_token: this.jwtService.sign(payload),
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+    };
   }
 }
