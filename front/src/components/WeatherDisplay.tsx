@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { GridContext } from '../context/GridContext';
+import React, { useState, useEffect, useContext } from "react";
+import axios from "axios";
+import { GridContext } from "../context/GridContext";
 
 // 1. API 응답 데이터의 타입을 interface로 정의
 interface WeatherDetails {
@@ -22,24 +22,28 @@ interface WeatherData {
 // 2. 컴포넌트 타입을 React.FC (Functional Component)로 지정
 const WeatherDisplay: React.FC = () => {
   // 3. useState에 제네릭(<>)으로 타입 지정
-  const {gridCoords} = useContext(GridContext);
+  const { gridCoords } = useContext(GridContext);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
 
   useEffect(() => {
     const fetchWeather = async () => {
       try {
         // axios.get 요청 시에도 응답 데이터의 타입을 지정할 수 있음
-        const response = await axios.get<WeatherData>('http://localhost:4000/weather/now',{params: {
-        nx: gridCoords.nx,
-        ny: gridCoords.ny
-      }});
+        const response = await axios.get<WeatherData>(
+          "https://kmj.shscript.com/weather/now",
+          {
+            params: {
+              nx: gridCoords.nx,
+              ny: gridCoords.ny,
+            },
+          }
+        );
         setWeatherData(response.data);
         setError(null);
       } catch (err) {
-        setError('날씨 정보를 불러오는 데 실패했습니다.');
+        setError("날씨 정보를 불러오는 데 실패했습니다.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -64,15 +68,27 @@ const WeatherDisplay: React.FC = () => {
         <>
           <h1>{weatherData.기준위치}</h1>
           <h2>{weatherData.관측시간}</h2>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{weatherData.요약}</p>
+          <p style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+            {weatherData.요약}
+          </p>
           <hr />
           <h3>상세 정보</h3>
           <ul>
-            <li><b>기온:</b> {weatherData.상세정보.기온}</li>
-            <li><b>습도:</b> {weatherData.상세정보.습도}</li>
-            <li><b>풍향:</b> {weatherData.상세정보.풍향}</li>
-            <li><b>풍속:</b> {weatherData.상세정보.풍속}</li>
-            <li><b>강수형태:</b> {weatherData.상세정보.강수형태}</li>
+            <li>
+              <b>기온:</b> {weatherData.상세정보.기온}
+            </li>
+            <li>
+              <b>습도:</b> {weatherData.상세정보.습도}
+            </li>
+            <li>
+              <b>풍향:</b> {weatherData.상세정보.풍향}
+            </li>
+            <li>
+              <b>풍속:</b> {weatherData.상세정보.풍속}
+            </li>
+            <li>
+              <b>강수형태:</b> {weatherData.상세정보.강수형태}
+            </li>
           </ul>
         </>
       )}
