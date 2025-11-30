@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import Sidebutton from "./components/layout/Sidebutton";
 import { useNavigate, Outlet } from "react-router-dom";
 import { OnoffContext } from "./context/OnoffContext";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 
 const Sidediv = styled.div`
   height: 6%;
@@ -140,6 +140,29 @@ const MainLayout = ({
 }) => {
   const navigate = useNavigate();
   const { serverTime } = useContext(OnoffContext);
+  const [now, setNow] = useState<Date | null>(null);
+
+  // 1. 서버 시간이 들어오면 내 시계(now)를 맞춘다.
+  useEffect(() => {
+    if (serverTime && serverTime !== "loading") {
+      setNow(new Date(serverTime));
+    }
+  }, [serverTime]);
+
+  // 2. 1초마다 내 시계를 째깍째깍 굴린다.
+  useEffect(() => {
+    if (!now) return;
+
+    const timer = setInterval(() => {
+      setNow((prevTime) => {
+        if (!prevTime) return null;
+        // 현재 시간 + 1초
+        return new Date(prevTime.getTime() + 1000);
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [now]); // now가 세팅되면 시작
   return (
     <Div>
       {" "}
@@ -284,7 +307,7 @@ const MainLayout = ({
           <Mobamenu onClick={() => setToggle((prev) => !prev)}>
             <img src="mobatoggle.svg" alt="아이콘" />
           </Mobamenu>
-          <Timebar>{serverTime}</Timebar>
+          {now && <Timebar>{now.toLocaleString("ko-KR")}</Timebar>}
         </Titlebar>
         <Main>
           <Outlet />

@@ -59,8 +59,7 @@ export const Socketmain = () => {
 
     const handleTime = (data: { timestamp: string }) => {
       console.log("⏰ 서버시간 수신:", data);
-      const formattedTime = new Date(data.timestamp).toLocaleString("ko-KR");
-      setServerTime(formattedTime);
+      setServerTime(data.timestamp);
     };
 
     const handleData = (payload: AduDataDto) => {
