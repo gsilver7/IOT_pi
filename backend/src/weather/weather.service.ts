@@ -20,9 +20,9 @@ export class WeatherService {
 
   // 단기예보 정보를 가져오는 메서드
   async getVilageFcst(baseDate: string, baseTime: string, nxin: string, nyin: string) {
-    const endpoint = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst';
+    const endpoint = 'https://apihub.kma.go.kr/api/typ02/openApi/VilageFcstInfoService_2.0/getUltraSrtNcst?pageNo=1&numOfRows=1000&dataType=XML&base_date=20210628&base_time=0600&nx=55&ny=127&authKey=VsCrv8PCThmAq7_Dwp4ZGA';
     const params = {
-      serviceKey: this.KMA_API_KEY,
+      authKey: this.KMA_API_KEY,
       pageNo: '1',
       numOfRows: '1000',
       dataType: 'JSON',
