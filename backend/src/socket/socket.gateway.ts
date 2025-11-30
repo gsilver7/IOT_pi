@@ -95,7 +95,25 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`[${client.id}] Python 실행 요청:`, payload);
     client.broadcast.emit('python', payload);
   }
+  @SubscribeMessage('bluetooth-scan')
+  handleBluetoothScan(
+    @MessageBody() payload: any,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    console.log(`[${client.id}] 블루투스 스캔 데이터 수신:`, payload);
 
+    // payload 구조 예시:
+    // {
+    //   deviceId: 'pi-001',
+    //   devices: [
+    //     { mac: "AA:BB:CC...", rssi: -80, name: "Mi Band" },
+    //     ...
+    //   ]
+    // }
+
+    // 만약 프론트엔드(대시보드)에도 이 데이터를 실시간으로 보여주려면 아래 코드를 사용합니다.
+    // client.broadcast.emit('dashboard-bluetooth-data', payload); 
+  }
   @Interval(10000)
   handleInterval() {
     const message = {
