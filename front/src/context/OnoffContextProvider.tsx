@@ -16,6 +16,7 @@ const OnoffContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [humi, setHumi] = useState<string>("loading");
   const [co2, setCo2] = useState<string>("loading");
   const [light, setLight] = useState<string>("loading");
+  const [python, setPython] = useState<boolean>(false);
 
   const value = useMemo(
     () => ({
@@ -45,6 +46,8 @@ const OnoffContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
       setCo2,
       light,
       setLight,
+      python,
+      setPython
     }),
     [
       hlight,
@@ -64,6 +67,8 @@ const OnoffContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
       setCo2,
       light,
       setLight,
+      python,
+      setPython
     ]
   );
 

@@ -86,6 +86,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit('tempdata', payload);
   }
 
+  @SubscribeMessage('python')
+  handlePython(
+    @MessageBody() payload: any,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    console.log(`[${client.id}] Python 실행 요청:`, payload);
+    client.broadcast.emit('python', payload);
+  }
+
   @Interval(10000)
   handleInterval() {
     const message = {

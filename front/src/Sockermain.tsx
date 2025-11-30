@@ -28,6 +28,8 @@ export const Socketmain = () => {
     setHumi,
     setCo2,
     setLight,
+    python,
+    setPython
   } = useContext(OnoffContext);
 
   // 센서 데이터 상태 관리
@@ -45,6 +47,12 @@ export const Socketmain = () => {
       socket.emit("control", controlMessage);
     }
   }, [hlight, win, fan, socket]);
+
+  const python = () => {if (socket) {
+    console.log("📤 python 전송:", "python");
+    socket.emit("python", "python");
+    setPython(false);
+  }
 
   // 2. 소켓 이벤트 리스너 등록 (Receive)
   useEffect(() => {

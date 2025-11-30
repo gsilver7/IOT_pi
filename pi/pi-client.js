@@ -7,6 +7,8 @@ const { spawn } = require('child_process');
 
 const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
 const BAUD_RATE = 9600;
+const PYTHON_VENV_PATH = '/home/pi/myenv/bin/python3'; // 가상환경 경로
+const PYTHON_SCRIPT_PATH = '/home/pi/scripts/my_script.py'; // 실행할 스크립트 경로
 
 // 시리얼 포트 초기화
 const port = new SerialPort({
@@ -55,6 +57,61 @@ socket.on('command', (data) => {
   if (data.command) {
     port.write(data.command + '\n');
   }
+});
+
+socket.on('python', (data) => {
+  console.log('🐍 Python 스크립트 실행 요청:', data);
+  
+  // data에서 경로를 받거나 기본 경로 사용
+  const scriptPath = data.scriptPath || PYTHON_SCRIPT_PATH;
+  const venvPath = data.venvPath || PYTHON_VENV_PATH;
+  const args = data.args || []; // Python 스크립트에 전달할 인자
+  
+  // Python 스크립트 실행
+  const pythonProcess = spawn(venvPath, [scriptPath, ...args]);
+  
+  // 표준 출력
+  pythonProcess.stdout.on('data', (output) => {
+    const result = output.toString();
+    console.log('🐍 Python 출력:', result);
+    
+    // 결과를 AWS 서버로 전송
+    socket.emit('python-result', {
+      deviceId: 'pi-001',
+      success: true,
+      output: result,
+      timestamp: new Date().toISOString()
+    });
+  });
+  
+  // 에러 출력
+  pythonProcess.stderr.on('data', (error) => {
+    const errorMsg = error.toString();
+    console.error('🔴 Python 에러:', errorMsg);
+    
+    socket.emit('python-result', {
+      deviceId: 'pi-001',
+      success: false,
+      error: errorMsg,
+      timestamp: new Date().toISOString()
+    });
+  });
+  
+  // 프로세스 종료
+  pythonProcess.on('close', (code) => {
+    console.log(`🐍 Python 프로세스 종료 (코드: ${code})`);
+  });
+  
+  pythonProcess.on('error', (err) => {
+    console.error('🔴 Python 실행 에러:', err.message);
+    
+    socket.emit('python-result', {
+      deviceId: 'pi-001',
+      success: false,
+      error: err.message,
+      timestamp: new Date().toISOString()
+    });
+  });
 });
 
 // 시리얼 포트 연결 성공

@@ -28,6 +28,8 @@ export interface OnoffContextType {
   setCo2: Dispatch<SetStateAction<string>>;
   light: string;
   setLight: Dispatch<SetStateAction<string>>;
+  python: boolean;
+  setPython: Dispatch<SetStateAction<boolean>>;
 }
 
 export const OnoffContext = createContext<OnoffContextType>({
@@ -57,4 +59,6 @@ export const OnoffContext = createContext<OnoffContextType>({
   setCo2: () => {},
   light: "loaging",
   setLight: () => {},
+  python: false,
+  setPython: () => {},
 });
