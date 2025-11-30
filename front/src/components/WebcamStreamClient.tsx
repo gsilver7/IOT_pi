@@ -19,7 +19,7 @@ const WebcamStreamClient = () => {
   const socketRef = useRef(null);
   const containerRef = useRef(null);
 
-  const SERVER_URL = 'http://kmj.shscript.com:8080';
+  const SERVER_URL = 'https://kmj.shscript.com';
 
   useEffect(() => {
     connectToServer();
