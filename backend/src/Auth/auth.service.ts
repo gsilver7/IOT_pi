@@ -1,20 +1,44 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { VerificationCode } from '../entities/verification-code.entity';
+import { VerificationCode } from 'src/entities/verification-code.entity';
+import { User } from '../user/user.entity';
+import { MailerService } from '@nestjs-modules/mailer';
+import { JwtService } from '@nestjs/jwt';
+import { UserService } from 'src/user/user.service';
+import * as bcrypt from 'bcrypt';
+import Redis from 'ioredis';
+import { InjectRedis } from '@nestjs-modules/ioredis'; // 또는 사용 중인 Redis 모듈의 데코레이터
+
+export class RegisterDto {
+  email: string;
+  name: string;
+  password: string;
+  face: string;
+  bluetooth: string;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly mailerService: MailerService,
     @InjectRepository(VerificationCode)
     private verificationCodeRepository: Repository<VerificationCode>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private userService: UserService,
+    private jwtService: JwtService,
+    private readonly mailerService: MailerService,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
 
   /**
    * 6자리 랜덤 인증 코드를 생성합니다.
-   * @returns {string} 6자리 숫자 문자열
    */
   private generateVerificationCode(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -22,17 +46,16 @@ export class AuthService {
 
   /**
    * 이메일 인증 코드를 생성하고 DB에 저장 후 발송합니다.
-   * @param email - 인증을 요청한 이메일 주소
    */
   async sendVerificationEmail(email: string): Promise<void> {
     const code = this.generateVerificationCode();
-    const expiryMinutes = 5; // 코드 유효 시간: 5분
+    const expiryMinutes = 5;
 
     try {
-      // 1. 기존 인증 코드 삭제 (중복 방지)
+      // 기존 인증 코드 삭제
       await this.verificationCodeRepository.delete({ email });
 
-      // 2. 새 인증 코드 저장
+      // 새 인증 코드 저장
       await this.verificationCodeRepository.save({
         email,
         code,
@@ -41,7 +64,7 @@ export class AuthService {
 
       console.log(`✅ DB 저장 성공: ${code} for ${email}`);
 
-      // 3. 이메일 발송
+      // 이메일 발송
       await this.mailerService.sendMail({
         to: email,
         subject: '[MyProject] 회원가입 인증 코드입니다.',
@@ -76,25 +99,12 @@ export class AuthService {
       console.log(`✅ 이메일 발송 성공: ${email}`);
     } catch (error) {
       console.error('❌ 처리 실패:', error);
-
-      if (
-        error.message?.includes('SMTP') ||
-        error.message?.includes('ECONNREFUSED')
-      ) {
-        throw new InternalServerErrorException(
-          '이메일 발송에 실패했습니다. SMTP 설정을 확인해주세요.',
-        );
-      }
-
-      throw new InternalServerErrorException('인증 코드 처리에 실패했습니다.');
+      throw new BadRequestException('이메일 발송에 실패했습니다.');
     }
   }
 
   /**
    * 인증 코드를 검증합니다.
-   * @param email - 사용자 이메일
-   * @param code - 입력한 인증 코드
-   * @returns 유효 여부
    */
   async verifyCode(email: string, code: string): Promise<boolean> {
     try {
@@ -123,5 +133,129 @@ export class AuthService {
       console.error('❌ 인증 코드 검증 실패:', error);
       return false;
     }
+  }
+
+  /**
+   * 회원가입을 처리합니다.
+   */
+  async register(
+    registerDto: RegisterDto,
+  ): Promise<{ message: string; user: any }> {
+    const { email, name, password, face, bluetooth } = registerDto;
+
+    try {
+      // 1. 이메일 중복 체크
+      const existingUser = await this.userRepository.findOne({
+        where: { email },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('이미 가입된 이메일입니다.');
+      }
+      const hashedPassword = await bcrypt.hash(String(password), 10);
+
+      // 2. 사용자 생성
+      const user = this.userRepository.create({
+        email,
+        name,
+        password: hashedPassword,
+        face: face || '',
+        bluetooth: bluetooth || '',
+      });
+
+      await this.userRepository.save(user);
+
+      console.log(`✅ 회원가입 성공: ${email}`);
+
+      // 3. 비밀번호 제외하고 반환
+      const { password: _, ...userWithoutPassword } = user;
+
+      return {
+        message: '회원가입이 완료되었습니다.',
+        user: userWithoutPassword,
+      };
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      console.error('❌ 회원가입 실패:', error);
+      throw new BadRequestException('회원가입에 실패했습니다.');
+    }
+  }
+  async login(email: string, password: string) {
+    console.log('로그인 시도:', email);
+
+    // 1. DB에서 유저 찾기
+    const user = await this.userService.findByEmail(email);
+    console.log('유저 찾기 결과:', user ? '존재' : '없음');
+    if (!user) {
+      throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다');
+    }
+
+    // 2. 비밀번호 검증
+    const isPasswordValid = await this.userService.validatePassword(
+      password,
+      user.password,
+    );
+    console.log('비밀번호 검증:', isPasswordValid);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다');
+    }
+
+    // 3. JWT 토큰 발급
+    const payload = { email: user.email, sub: user.id, name: user.name };
+    const accessToken = this.jwtService.sign(payload); // 변수로 분리함
+
+    const refreshToken = uuidv4();
+
+    await this.redis.set(`refresh:${user.id}`, refreshToken, 'EX', 1209600);
+
+    console.log(`Refresh Token 저장 완료: User ${user.id}`);
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken, // [추가됨]
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+    };
+  }u
+
+  async refresh(userId: string, refreshToken: string) {
+    // 1. Redis에서 유저의 리프레시 토큰 가져오기
+    const storedToken = await this.redis.get(`refresh:${userId}`);
+
+    // 2. 토큰 검증 (Redis에 없거나, 보낸 거랑 다르면 에러)
+    if (!storedToken || storedToken !== refreshToken) {
+      throw new UnauthorizedException(
+        '리프레시 토큰이 유효하지 않거나 만료되었습니다.',
+      );
+    }
+
+    // 3. 유저 정보 다시 조회 (선택사항, 페이로드 채우기 위함)
+    // (DB 조회 없이 이전 페이로드를 재활용해도 되지만, 안전하게 DB 확인 권장)
+    const user = await this.userRepository.findOne({
+      where: { id: Number(userId) },
+    }); // ID 타입에 맞춰 수정하세요
+    if (!user) {
+      throw new UnauthorizedException('유저를 찾을 수 없습니다.');
+    }
+
+    // 4. 새 Access Token 발급
+    const payload = { email: user.email, sub: user.id, name: user.name };
+    const newAccessToken = this.jwtService.sign(payload);
+
+    // (선택: 리프레시 토큰도 새로 바꿔줄 거면 여기서 uuid 새로 뽑아서 redis.set 다시 하면 됨 - RTR 방식)
+
+    return {
+      access_token: newAccessToken,
+      // refresh_token: ... (RTR 적용 시 새거 반환)
+    };
+  }
+  async logout(userId: string) {
+    // Redis에서 해당 유저의 리프레시 토큰 삭제
+    await this.redis.del(`refresh:${userId}`);
+    return { message: '로그아웃 성공' };
   }
 }
