@@ -1,4 +1,3 @@
-// Auth.controller.ts → auth.controller.ts (소문자로)
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SendVerificationEmailDto } from './dto/send-email.dto';
@@ -10,14 +9,13 @@ export class AuthController {
   @Post('send-verification-email')
   @HttpCode(HttpStatus.OK)
   async sendVerificationEmail(@Body() sendEmailDto: SendVerificationEmailDto) {
-    await this.authService.sendVerificationEmail(sendEmailDto);
+    await this.authService.sendVerificationEmail(sendEmailDto.email);
     return {
       message: '인증 코드가 이메일로 성공적으로 발송되었습니다.',
       email: sendEmailDto.email,
     };
   }
 
-  // 인증 코드 검증 엔드포인트 추가
   @Post('verify-code')
   @HttpCode(HttpStatus.OK)
   async verifyCode(@Body() body: { email: string; code: string }) {

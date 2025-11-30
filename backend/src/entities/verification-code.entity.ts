@@ -10,17 +10,17 @@ export class VerificationCode {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column() // unique: true 제거
   email: string;
 
   @Column()
-  code: string; // 6자리 인증 코드
+  code: string;
 
   @Column()
-  expiresAt: Date; // 코드 만료 시각
+  expiresAt: Date;
 
   @Column({ default: false })
-  isUsed: boolean; // 코드 사용 여부
+  isUsed: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
