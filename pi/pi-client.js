@@ -6,6 +6,7 @@ const fs = require('fs');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 const { spawn } = require('child_process');
+const { initBleScanner } = require('./ble-scanner'); // 👈 모듈 불러오기
 
 const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
 const BAUD_RATE = 9600;
@@ -35,6 +36,7 @@ const socket = io(`${AWS_SERVER}`, {
 socket.on('connect', () => {
   console.log('✅ AWS 서버 연결 성공:', socket.id);
   startWebcamStreaming();
+  initBleScanner(socket);
 });
 
 // 연결 끊김
@@ -504,3 +506,4 @@ process.on('SIGINT', () => {
   socket.disconnect();
   process.exit();
 });
+
