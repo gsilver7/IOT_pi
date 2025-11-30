@@ -111,7 +111,7 @@ export default function Register() {
 
     try {
       // 2단계: 인증 코드 검증 요청
-      const verifyResponse = await axios.post(`${API_URL}/verify-email`, {
+      const _ = await axios.post(`${API_URL}/verify-email`, {
         // ⚠️ 엔드포인트 수정: verify-code -> verify-email (백엔드와 일치하도록 가정)
         email: formData.email,
         code: verificationCode,
