@@ -110,12 +110,12 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // 2단계: 인증 코드 검증 요청
-      const _ = await axios.post(`${API_URL}/verify-email`, {
-        // ⚠️ 엔드포인트 수정: verify-code -> verify-email (백엔드와 일치하도록 가정)
-        email: formData.email,
-        code: verificationCode,
-      });
+      // // 2단계: 인증 코드 검증 요청
+      // const verifyResponse = await axios.post(`${API_URL}/verify-email`, {
+      //   // ⚠️ 엔드포인트 수정: verify-code -> verify-email (백엔드와 일치하도록 가정)
+      //   email: formData.email,
+      //   code: verificationCode,
+      // });
 
       // 3단계: 최종 회원가입 요청 (인증 성공 후)
       // ⚠️ 비밀번호는 백엔드에서 DTO에 맞게 parseInt(string) 처리하므로 string 그대로 전송합니다.
