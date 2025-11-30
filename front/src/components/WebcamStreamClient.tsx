@@ -29,6 +29,35 @@ const WebcamStreamClient = () => {
     };
   }, []);
 
+  const registerFace = async () => {
+    if (!capturedImage) return;
+
+    try {
+      const response = await fetch('https://kmj.shscript.com/api/face/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // 또는 쿠키 사용
+        },
+        body: JSON.stringify({
+          imageData: capturedImage.imageData
+        })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        alert('얼굴이 성공적으로 등록되었습니다!');
+        closeModal();
+      } else {
+        alert(`등록 실패: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('얼굴 등록 에러:', error);
+      alert('얼굴 등록 중 오류가 발생했습니다.');
+    }
+  };
+
   const connectToServer = () => {
     try {
       // Socket.IO 클라이언트 생성
@@ -201,6 +230,21 @@ const WebcamStreamClient = () => {
                 }}
               >
                 ✕ 닫기
+              </button>
+                <button
+                onClick={registerFace}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  backgroundColor: '#2196F3',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  marginRight: '10px',
+                }}
+              >
+                👤 얼굴 등록
               </button>
               <button
                 onClick={downloadImage}
