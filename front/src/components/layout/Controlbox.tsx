@@ -34,7 +34,7 @@ const Sdiv = styled.div`
     height: 200vh;
   }
   @media (max-width: 400px) {
-    height: 120vh;
+    height: 150vh;
   }
 `;
 
