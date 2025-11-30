@@ -20,9 +20,11 @@ interface ToggleButtonProps {
 
 const ModeButton = ({ ttt }: ToggleButtonProps) => {
   const { modetype, setModetype } = useContext(OnoffContext);
+
+  const h=(ttt === "sudong")?"수동":(ttt === "in")?"재실":(ttt === "zzz")?"취침":"외출"
   return (
     <Sbutton onClick={() => setModetype(ttt)} mode={modetype} ttt={ttt}>
-      {ttt}
+      {h}
     </Sbutton>
   );
 };

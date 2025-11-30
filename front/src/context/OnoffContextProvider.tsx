@@ -10,7 +10,7 @@ const OnoffContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [hit, setHit] = useState<boolean>(false);
   const [hum, setHum] = useState<boolean>(false);
   const [door, setDoor] = useState<boolean>(false);
-  const [modetype, setModetype] = useState<string>("수동");
+  const [modetype, setModetype] = useState<string>("sudong");
   const [serverTime, setServerTime] = useState<string>("loading");
   const [temp, setTemp] = useState<string>("loading");
   const [humi, setHumi] = useState<string>("loading");

@@ -47,7 +47,7 @@ export const OnoffContext = createContext<OnoffContextType>({
   setFan: () => {},
   door: false,
   setDoor: () => {},
-  modetype: "수동",
+  modetype: "sudong",
   setModetype: () => {},
   serverTime: "loading",
   setServerTime: () => {},
