@@ -176,18 +176,23 @@ export class AuthService {
       throw new BadRequestException('회원가입에 실패했습니다.');
     }
   }
-  async login(email: string, password: string) {
+  async login(email: string, password: number) {
+    console.log('로그인 시도:', email);
+
     // 1. DB에서 유저 찾기
     const user = await this.userService.findByEmail(email);
+    console.log('유저 찾기 결과:', user ? '존재' : '없음');
     if (!user) {
       throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다');
     }
 
     // 2. 비밀번호 검증
     const isPasswordValid = await this.userService.validatePassword(
-      password,
+      password.toString(),
       user.password.toString(),
     );
+    console.log('비밀번호 검증:', isPasswordValid);
+
     if (!isPasswordValid) {
       throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다');
     }
