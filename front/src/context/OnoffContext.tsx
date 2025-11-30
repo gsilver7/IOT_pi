@@ -20,6 +20,14 @@ export interface OnoffContextType {
   setModetype: Dispatch<SetStateAction<string>>;
   serverTime: string;
   setServerTime: Dispatch<SetStateAction<string>>;
+  temp: string;
+  setTemp: Dispatch<SetStateAction<string>>;
+  humi: string;
+  setHumi: Dispatch<SetStateAction<string>>;
+  co2: string;
+  setCo2: Dispatch<SetStateAction<string>>;
+  light: string;
+  setLight: Dispatch<SetStateAction<string>>;
 }
 
 export const OnoffContext = createContext<OnoffContextType>({
@@ -41,4 +49,12 @@ export const OnoffContext = createContext<OnoffContextType>({
   setModetype: () => {},
   serverTime: "loading",
   setServerTime: () => {},
+  temp: "loading",
+  setTemp: () => {},
+  humi: "loaging",
+  setHumi: () => {},
+  co2: "loaging",
+  setCo2: () => {},
+  light: "loaging",
+  setLight: () => {},
 });

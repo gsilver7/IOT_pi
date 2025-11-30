@@ -16,6 +16,7 @@ import { Global } from "@emotion/react";
 import globalStyles from "./styles/globalStyles";
 import Home from "./pages/Home.tsx";
 import Mode from "./pages/Mode.tsx";
+import { Socketmain } from "./Sockermain.tsx";
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const token = localStorage.getItem("token");
@@ -31,7 +32,9 @@ export const RootComponent = () => {
     <BrowserRouter>
       <GridContextProvider>
         <OnoffContextProvider>
+          <Socketmain />
           <Global styles={globalStyles} />
+          <></>
           <Routes>
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />

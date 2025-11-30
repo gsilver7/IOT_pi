@@ -76,7 +76,7 @@ const Timebar = styled.div`
   margin-left: auto;
   margin-right: 0;
   padding: 0;
-  padding-right: 30%;
+  padding-right: 18%;
   @media (max-width: 800px) {
     font-size: 20px;
     padding-right: 6%;
