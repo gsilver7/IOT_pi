@@ -15,7 +15,7 @@ interface ControlMessage {
   light: boolean;
   w: boolean;
   fan: boolean;
-  modetype: string;
+  mode: string;
 }
 
 export const Socketmain = () => {
@@ -40,7 +40,7 @@ export const Socketmain = () => {
       light: hlight,
       w: win,
       fan: fan,
-      modetype:modetype
+      mode:modetype
     };
 
     if (socket) {
