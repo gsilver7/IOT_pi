@@ -15,6 +15,14 @@ services:
     networks:
       - iot-pi-network
 
+  redis:
+    image: redis:7-alpine
+
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
   iot-pi-proxy:
     image: nginx:alpine
     container_name: iot-pi-proxy

@@ -14,9 +14,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { MailerAppModule } from './mailer/mailer.module';
 import { AuthModule } from './Auth/auth.module';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
+    RedisModule.forRoot({
+      type: 'single',
+      url: 'redis://redis:6379', // 컨테이너명 사용
+      // 또는
+      options: {
+        host: process.env.REDIS_HOST || 'redis',
+        port: parseInt(process.env.REDIS_PORT) || 6379,
+      },
+    }),
     ConfigModule.forRoot({
       isGlobal: true, // 전역으로 사용
       envFilePath: '.env', // .env 파일 경로
