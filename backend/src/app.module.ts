@@ -23,22 +23,22 @@ import { UserModule } from './user/user.module';
       timeout: 5000, // 요청 시간 초과 5초
     }),
     ScheduleModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'mysql', // 또는 'postgres'
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: false, // 프로덕션에서는 false
-    }),
+    // TypeOrmModule.forRoot({
+    //   type: 'mysql', // 또는 'postgres'
+    //   host: process.env.DB_HOST,
+    //   port: parseInt(process.env.DB_PORT),
+    //   username: process.env.DB_USERNAME,
+    //   password: process.env.DB_PASSWORD,
+    //   database: process.env.DB_DATABASE,
+    //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
+    //   synchronize: false, // 프로덕션에서는 false
+    // }),
     EventEmitterModule.forRoot({ wildcard: true, delimiter: '.' }),
     // PythonModule,
     EventsModule,
     UsbModule,
     StreamModule,
-    UserModule,
+    // UserModule,
     WeatherModule,
     SerialModule,
   ],
