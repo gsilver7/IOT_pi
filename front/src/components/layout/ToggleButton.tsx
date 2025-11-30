@@ -7,7 +7,7 @@ const Sdiv = styled.div`
   width:40%;
 `;
 
-const Sp = styled.p<{ttt:boolean}>`
+const Sp = styled.p<{ttt:number}>`
   margin:2%;
   color: ${props => props.ttt ? '#5850EC' : '#9E9E9E'};
   text-align:center;
@@ -28,7 +28,7 @@ const Simg = styled.img`
 interface ToggleButtonProps {
 
   onClick: () => void;
-  ttt: boolean;
+  ttt: number;
 }
 
 const ToggleButton = ({onClick, ttt}: ToggleButtonProps) => {

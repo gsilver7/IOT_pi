@@ -2,10 +2,10 @@ import styled from '@emotion/styled';
 
 interface ToggleImg{
   buttonimg:string;
-  ttt:boolean;
+  ttt:number;
 }
 
-const Circle = styled.div<{ttt:boolean}>`
+const Circle = styled.div<{ttt:number}>`
   background-color: ${props => props.ttt ? '#CDCBFA' : '#E3E3E3'};
   border-radius: 50%;
   aspect-ratio: 1;
