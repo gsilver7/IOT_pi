@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable ,NotFoundException} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -62,5 +62,18 @@ export class UserService {
     });
     
     console.log(`✅ DB Update 완료: User(${userId}) face = ${vectorPath}`);
+  }
+  async findFaceVectorPath(userId: number): Promise<string> {
+    const user = await this.userRepository.findOne({ 
+      where: { id: userId },
+      select: ['face'] // 다른 정보 필요 없이 face 컬럼만 가져옴 (효율성)
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+    
+    // face 컬럼이 비어있다면(등록 안 함) null 반환
+    return user.face;
   }
 }
