@@ -42,4 +42,17 @@ export class UserService {
   ): Promise<boolean> {
     return bcrypt.compare(password, hashedPassword);
   }
+  async getProfile(userId: number) {
+    return this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'email', 'name', 'bluetooth'], // 필요한 컬럼만 선택
+    });
+  }
+
+  // 2. [추가] 블루투스 주소 업데이트
+  async updateBluetooth(userId: number, bluetoothAddr: string) {
+    // update(조건, 변경할값)
+    await this.userRepository.update(userId, { bluetooth: bluetoothAddr });
+    return { message: '블루투스 주소가 저장되었습니다.' };
+  }
 }
