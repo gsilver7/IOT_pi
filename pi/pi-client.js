@@ -8,7 +8,7 @@ const { spawn } = require('child_process');
 const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
 const BAUD_RATE = 9600;
 const PYTHON_VENV_PATH = '/home/rlaaudwns/web/backend/python/bin/python3'; // 가상환경 경로
-const PYTHON_SCRIPT_PATH = '/home/rlaaudwns/web/pi/face_main.py'; // 실행할 스크립트 경로
+const PYTHON_SCRIPT_PATH = '/home/rlaaudwns/web/pi/face_make.py'; // 실행할 스크립트 경로
 
 // 시리얼 포트 초기화
 const port = new SerialPort({
@@ -61,57 +61,96 @@ socket.on('command', (data) => {
 
 socket.on('python', (data) => {
   console.log('🐍 Python 스크립트 실행 요청:', data);
-  
-  // data에서 경로를 받거나 기본 경로 사용
+
   const scriptPath = data.scriptPath || PYTHON_SCRIPT_PATH;
   const venvPath = data.venvPath || PYTHON_VENV_PATH;
-  const args = data.args || []; // Python 스크립트에 전달할 인자
-  
-  // Python 스크립트 실행
-  const pythonProcess = spawn(venvPath, [scriptPath, ...args]);
-  
-  // 표준 출력
-  pythonProcess.stdout.on('data', (output) => {
-    const result = output.toString();
-    console.log('🐍 Python 출력:', result);
-    
-    // 결과를 AWS 서버로 전송
-    socket.emit('python-result', {
-      deviceId: 'pi-001',
-      success: true,
-      output: result,
-      timestamp: new Date().toISOString()
-    });
-  });
-  
-  // 에러 출력
-  pythonProcess.stderr.on('data', (error) => {
-    const errorMsg = error.toString();
-    console.error('🔴 Python 에러:', errorMsg);
-    
-    socket.emit('python-result', {
-      deviceId: 'pi-001',
-      success: false,
-      error: errorMsg,
-      timestamp: new Date().toISOString()
-    });
-  });
-  
-  // 프로세스 종료
-  pythonProcess.on('close', (code) => {
-    console.log(`🐍 Python 프로세스 종료 (코드: ${code})`);
-  });
-  
-  pythonProcess.on('error', (err) => {
-    console.error('🔴 Python 실행 에러:', err.message);
-    
-    socket.emit('python-result', {
-      deviceId: 'pi-001',
-      success: false,
-      error: err.message,
-      timestamp: new Date().toISOString()
-    });
-  });
+  const userId = data.userId || 'unknown'; // 유저 ID (파일명이나 인자로 사용)
+
+  // 1. 이미지 데이터 처리
+  if (!data.image) {
+    console.error('❌ 이미지가 없습니다.');
+    return;
+  }
+
+  try {
+    // Base64 헤더 제거 및 버퍼 변환
+    const base64Data = data.image.replace(/^data:image\/\w+;base64,/, "");
+    const imgBuffer = Buffer.from(base64Data, 'base64');
+
+    // 2. 파일 저장 경로 설정 (현재 폴더에 저장)
+    // 파일명 중복 방지를 위해 timestamp 사용 (예: face_1701234567890.jpg)
+    const fileName = `face_${Date.now()}.jpg`; 
+    const filePath = path.join(__dirname, fileName); // 현재 실행 위치에 저장
+
+    console.log(`💾 이미지 저장 시작: ${filePath}`);
+
+    // 3. 파일 저장 (비동기)
+    fs.writeFile(filePath, imgBuffer, (err) => {
+      if (err) {
+        console.error('❌ 이미지 저장 실패:', err);
+        socket.emit('python-result', { success: false, error: 'Image save failed' });
+        return;
+      }
+
+      console.log('✅ 이미지 저장 완료. Python 실행 시작...');
+
+      // ---------------------------------------------------------
+      // [핵심] 4. 저장이 완료되면 Python 실행
+      // ---------------------------------------------------------
+      // 인자로 [스크립트경로, 이미지경로, 유저ID] 를 넘깁니다.
+      const args = [scriptPath, filePath, userId]; 
+      
+      const pythonProcess = spawn(venvPath, args);
+
+      let resultBuffer = '';
+      let errorBuffer = '';
+
+      // 표준 출력 수신
+      pythonProcess.stdout.on('data', (output) => {
+        resultBuffer += output.toString();
+      });
+
+      // 에러 출력 수신
+      pythonProcess.stderr.on('data', (error) => {
+        errorBuffer += error.toString();
+      });
+
+      // 프로세스 종료 처리
+      pythonProcess.on('close', (code) => {
+        console.log(`🐍 Python 프로세스 종료 (코드: ${code})`);
+
+        // (선택사항) 파이썬 처리가 끝났으니 이미지를 삭제할까요?
+        // fs.unlink(filePath, () => console.log('🗑️ 임시 이미지 삭제 완료'));
+
+        if (code === 0) {
+          console.log('🐍 Python 최종 출력:', resultBuffer);
+          socket.emit('python-result', {
+            deviceId: 'pi-001',
+            success: true,
+            output: resultBuffer.trim(),
+            timestamp: new Date().toISOString()
+          });
+        } else {
+          console.error('🔴 Python 에러:', errorBuffer);
+          socket.emit('python-result', {
+            deviceId: 'pi-001',
+            success: false,
+            error: errorBuffer,
+            timestamp: new Date().toISOString()
+          });
+        }
+      });
+
+      pythonProcess.on('error', (err) => {
+        console.error('🔴 Python 실행 에러:', err.message);
+        socket.emit('python-result', { success: false, error: err.message });
+      });
+
+    }); // end of fs.writeFile
+
+  } catch (e) {
+    console.error('이미지 처리 중 예외 발생:', e);
+  }
 });
 
 // 시리얼 포트 연결 성공
