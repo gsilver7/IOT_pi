@@ -11,6 +11,9 @@ const Sidediv = styled.div`
   padding-top: 12%;
   font-weight: 700;
   font-size: 130%;
+  @media (max-height: 800px) {
+    font-size: 100%;
+  }
 `;
 const Main = styled.div`
   position: relative;
