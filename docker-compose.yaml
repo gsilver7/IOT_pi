@@ -10,6 +10,8 @@ services:
     build:
       context: ./backend
     container_name: iot-pi-server
+    env_file:
+      - ./backend/.env # .env 파일 경로
     networks:
       - iot-pi-network
 
