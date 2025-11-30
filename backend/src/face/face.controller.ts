@@ -12,7 +12,7 @@ export class FaceController {
   ) {}
 
   @Post('register')
-   @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   async registerFace(
     @Body('imageData') imageData: string,
     @Request() req,
