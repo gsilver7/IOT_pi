@@ -148,7 +148,7 @@ export class AuthService {
       if (existingUser) {
         throw new ConflictException('이미 가입된 이메일입니다.');
       }
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(String(password), 10);
 
       // 2. 사용자 생성
       const user = this.userRepository.create({
