@@ -30,7 +30,7 @@ interface ControlMessage {
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://kmj.shscript.com:8080',
+    origin: 'https://kmj.shscript.com',
     credentials: true, 
     methods: ['GET', 'POST'],
   },
