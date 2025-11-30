@@ -18,4 +18,13 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column()
+  face: string;
+
+  @Column({ unique: true })
+  password: number;
+
+  @Column()
+  bluetooth: string;
 }

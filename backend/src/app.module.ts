@@ -12,6 +12,8 @@ import { SerialModule } from './serial/serial.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
+import { MailerAppModule } from './mailer/mailer.module';
+import { AuthModule } from './Auth/auth.module';
 
 @Module({
   imports: [
@@ -41,7 +43,10 @@ import { UserModule } from './user/user.module';
     StreamModule,
     UserModule,
     WeatherModule,
+    MailerAppModule,
     SerialModule,
+    MailerAppModule, // 추가
+    AuthModule, // 추가
   ],
   controllers: [AppController],
   providers: [AppService],
