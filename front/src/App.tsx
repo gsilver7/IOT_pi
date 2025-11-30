@@ -14,7 +14,7 @@ import globalStyles from "./styles/globalStyles";
 import Controlbox from "./components/layout/Controlbox";
 import Visit from "./components/layout/Visit";
 import ModeButton from "./components/layout/Modebutton";
-import { LogoutButton } from "./components/Logoutbutton";
+import { useNavigate } from "react-router-dom";
 
 interface AduDataDto {
   temp: string;
@@ -164,6 +164,8 @@ const Modebox = styled.div`
 `;
 
 function App() {
+  const navigate = useNavigate();
+
   interface ControlMessage {
     light: boolean;
     w: boolean;
@@ -318,6 +320,7 @@ function App() {
         <Sidebutton
           onClick={() => {
             setHomemode("정보");
+            navigate("/info");
           }}
           imageSrc="/User.svg"
         >
@@ -378,10 +381,11 @@ function App() {
         <Sidebutton
           onClick={() => {
             setHomemode("정보");
+            navigate("/info");
           }}
           imageSrc="/User.svg"
         >
-          방문객
+          정보
         </Sidebutton>
       </Mobabar>
 
@@ -450,13 +454,6 @@ function App() {
                 description="현관 CCTV로 방문객 감지"
               />
               <Visit></Visit>
-            </div>
-          )}
-
-          {homemode === "정보" && (
-            <div>
-              <Contentbox title="정보" description="내 정보 관리" />
-              <LogoutButton />
             </div>
           )}
         </Div>

@@ -29,6 +29,9 @@ const Login = () => {
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("userId", data.userId);
         localStorage.setItem("userName", data.name);
+        if (data.refresh_token) {
+          localStorage.setItem("refreshToken", data.refresh_token);
+        }
 
         // 메인 페이지로 이동
         navigate("/");

@@ -3,12 +3,16 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
+import { AuthGuard } from '@nestjs/passport'; // 이거 import 필수
 
 @Controller('users')
 export class UserController {
@@ -37,5 +41,17 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id') id: string): Promise<void> {
     return this.userService.remove(+id);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile')
+  async getProfile(@Request() req) {
+    return this.userService.getProfile(req.user.userId);
+  }
+
+  // 2. 블루투스 주소 저장/수정
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('bluetooth')
+  async updateBluetooth(@Request() req, @Body() body: { bluetooth: string }) {
+    return this.userService.updateBluetooth(req.user.userId, body.bluetooth);
   }
 }

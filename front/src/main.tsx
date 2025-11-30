@@ -6,6 +6,7 @@ import Register from "./pages/Register.tsx";
 import Login from "./pages/Login.tsx";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // Context를 사용하기 위해 RootComponent를 생성합니다.
+import Info from "./pages/Info.tsx";
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const token = localStorage.getItem("token");
@@ -28,6 +29,14 @@ export const RootComponent = () => {
               element={
                 <PrivateRoute>
                   <App />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/info"
+              element={
+                <PrivateRoute>
+                  <Info />
                 </PrivateRoute>
               }
             />

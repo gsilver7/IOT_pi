@@ -220,7 +220,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
     };
-  }u
+  }
 
   async refresh(userId: string, refreshToken: string) {
     // 1. Redis에서 유저의 리프레시 토큰 가져오기
