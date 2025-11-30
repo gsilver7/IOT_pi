@@ -29,6 +29,34 @@ const WebcamStreamClient = () => {
     };
   }, []);
 
+    const compareFace = async () => {
+    if (!capturedImage) return;
+
+    try {
+      const response = await fetch('https://kmj.shscript.com/api/face/compare', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // 또는 쿠키 사용
+        },
+        body: JSON.stringify({
+          imageData: capturedImage.imageData
+        })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        alert('얼굴이 성공적으로 등록되었습니다!');
+      } else {
+        alert(`등록 실패: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('얼굴 등록 에러:', error);
+      alert('얼굴 등록 중 오류가 발생했습니다.');
+    }
+  };
+
   const registerFace = async () => {
     if (!capturedImage) return;
 
@@ -245,6 +273,20 @@ const WebcamStreamClient = () => {
                 }}
               >
                 👤 얼굴 등록
+              </button>
+              <button
+                onClick={compareFace}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                }}
+              >
+                💾 얼굴 비교
               </button>
               <button
                 onClick={downloadImage}

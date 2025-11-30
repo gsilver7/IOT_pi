@@ -5,7 +5,8 @@ import { OnoffContext } from "../context/OnoffContext";
 import { useContext } from "react";
 
 const Info = () => {
-    const { python,setPython } = useContext(OnoffContext);
+
+
   
 
   return (
@@ -13,12 +14,6 @@ const Info = () => {
       <Contentbox title="정보" description="내 정보 관리" />
       <LogoutButton />
       <BluetoothRegister />
-      <button onClick={() => {
-  if (!python) {
-    setPython(true);
-  }
-  else {setPython(false);}
-}}/>
     </div>
   );
 };
