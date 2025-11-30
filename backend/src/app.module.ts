@@ -31,7 +31,8 @@ import { UserModule } from './user/user.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: false, // 프로덕션에서는 false
+      synchronize: true, // 이거 true로!
+      logging: true, // 로그도 켜서 확인
     }),
     EventEmitterModule.forRoot({ wildcard: true, delimiter: '.' }),
     // PythonModule,
