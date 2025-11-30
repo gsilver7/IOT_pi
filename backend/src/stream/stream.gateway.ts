@@ -11,6 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { UserService } from 'src/user/user.service';
 
 @WebSocketGateway({
   cors: { origin: '*', methods: ['GET', 'POST'] },
@@ -19,6 +20,8 @@ import * as path from 'path';
 export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
+
+  constructor(private readonly usersService: UserService) {}
 
   private connectedClients = new Set<string>();
   private piClient: Socket | null = null; // 라즈베리파이 클라이언트
@@ -170,5 +173,30 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit('sensor-data', data);
 
     return { success: true, message: 'Sensor data received' };
+  }
+  @SubscribeMessage('python-result')
+  async handlePythonResult(@MessageBody() data: any) {
+    console.log('🐍 Python 결과 수신:', data);
+
+    if (data.success && data.vector && data.userId) {
+      try {
+        // DB 업데이트 요청
+        // data.userId가 문자열로 올 수 있으므로 숫자로 변환 (필요시)
+        await this.usersService.updateFaceVector(Number(data.userId), data.vector);
+        
+        console.log('✨ 얼굴 벡터 DB 저장 성공!');
+        
+        // (선택사항) 프론트엔드에게 "등록 완료됐어!" 라고 알려주기
+        this.server.emit('face-register-complete', { 
+            userId: data.userId,
+            success: true 
+        });
+
+      } catch (error) {
+        console.error('❌ DB 저장 실패:', error);
+      }
+    } else {
+      console.warn('⚠️ Python 결과에 필요한 데이터가 부족합니다 (실패했거나 userId 누락)');
+    }
   }
 }

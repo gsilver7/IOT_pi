@@ -55,4 +55,12 @@ export class UserService {
     await this.userRepository.update(userId, { bluetooth: bluetoothAddr });
     return { message: '블루투스 주소가 저장되었습니다.' };
   }
+  async updateFaceVector(userId: number, vectorPath: string) {
+    // userId에 해당하는 유저의 face 컬럼을 vectorPath로 수정
+    await this.userRepository.update(userId, { 
+        face: vectorPath 
+    });
+    
+    console.log(`✅ DB Update 완료: User(${userId}) face = ${vectorPath}`);
+  }
 }
