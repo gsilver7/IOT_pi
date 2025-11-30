@@ -8,6 +8,10 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('send-verification-email')
+  async sendVerificationEmail(@Body() sendEmailDto: SendEmailDto) {
+    // DTO 전체를 전달하거나, email만 전달
+    return this.authService.sendVerificationEmail(sendEmailDto.email);
+  }
   @HttpCode(HttpStatus.OK)
   async sendVerificationEmail(@Body() sendEmailDto: SendVerificationEmailDto) {
     await this.authService.sendVerificationEmail(sendEmailDto);
