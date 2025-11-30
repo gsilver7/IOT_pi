@@ -1,20 +1,34 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
+import {
+  Injectable,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { VerificationCode } from '../entities/verification-code.entity';
+import { VerificationCode } from 'src/entities/verification-code.entity';
+import { User } from '../user/user.entity';
+import { MailerService } from '@nestjs-modules/mailer';
+
+export class RegisterDto {
+  email: string;
+  name: string;
+  password: number;
+  face: string;
+  bluetooth: string;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly mailerService: MailerService,
     @InjectRepository(VerificationCode)
     private verificationCodeRepository: Repository<VerificationCode>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private readonly mailerService: MailerService,
   ) {}
 
   /**
    * 6자리 랜덤 인증 코드를 생성합니다.
-   * @returns {string} 6자리 숫자 문자열
    */
   private generateVerificationCode(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -22,17 +36,16 @@ export class AuthService {
 
   /**
    * 이메일 인증 코드를 생성하고 DB에 저장 후 발송합니다.
-   * @param email - 인증을 요청한 이메일 주소
    */
   async sendVerificationEmail(email: string): Promise<void> {
     const code = this.generateVerificationCode();
-    const expiryMinutes = 5; // 코드 유효 시간: 5분
+    const expiryMinutes = 5;
 
     try {
-      // 1. 기존 인증 코드 삭제 (중복 방지)
+      // 기존 인증 코드 삭제
       await this.verificationCodeRepository.delete({ email });
 
-      // 2. 새 인증 코드 저장
+      // 새 인증 코드 저장
       await this.verificationCodeRepository.save({
         email,
         code,
@@ -41,7 +54,7 @@ export class AuthService {
 
       console.log(`✅ DB 저장 성공: ${code} for ${email}`);
 
-      // 3. 이메일 발송
+      // 이메일 발송
       await this.mailerService.sendMail({
         to: email,
         subject: '[MyProject] 회원가입 인증 코드입니다.',
@@ -76,25 +89,12 @@ export class AuthService {
       console.log(`✅ 이메일 발송 성공: ${email}`);
     } catch (error) {
       console.error('❌ 처리 실패:', error);
-
-      if (
-        error.message?.includes('SMTP') ||
-        error.message?.includes('ECONNREFUSED')
-      ) {
-        throw new InternalServerErrorException(
-          '이메일 발송에 실패했습니다. SMTP 설정을 확인해주세요.',
-        );
-      }
-
-      throw new InternalServerErrorException('인증 코드 처리에 실패했습니다.');
+      throw new BadRequestException('이메일 발송에 실패했습니다.');
     }
   }
 
   /**
    * 인증 코드를 검증합니다.
-   * @param email - 사용자 이메일
-   * @param code - 입력한 인증 코드
-   * @returns 유효 여부
    */
   async verifyCode(email: string, code: string): Promise<boolean> {
     try {
@@ -122,6 +122,53 @@ export class AuthService {
     } catch (error) {
       console.error('❌ 인증 코드 검증 실패:', error);
       return false;
+    }
+  }
+
+  /**
+   * 회원가입을 처리합니다.
+   */
+  async register(
+    registerDto: RegisterDto,
+  ): Promise<{ message: string; user: any }> {
+    const { email, name, password, face, bluetooth } = registerDto;
+
+    try {
+      // 1. 이메일 중복 체크
+      const existingUser = await this.userRepository.findOne({
+        where: { email },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('이미 가입된 이메일입니다.');
+      }
+
+      // 2. 사용자 생성
+      const user = this.userRepository.create({
+        email,
+        name,
+        password,
+        face: face || '',
+        bluetooth: bluetooth || '',
+      });
+
+      await this.userRepository.save(user);
+
+      console.log(`✅ 회원가입 성공: ${email}`);
+
+      // 3. 비밀번호 제외하고 반환
+      const { password: _, ...userWithoutPassword } = user;
+
+      return {
+        message: '회원가입이 완료되었습니다.',
+        user: userWithoutPassword,
+      };
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      console.error('❌ 회원가입 실패:', error);
+      throw new BadRequestException('회원가입에 실패했습니다.');
     }
   }
 }

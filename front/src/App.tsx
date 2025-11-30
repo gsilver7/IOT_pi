@@ -14,6 +14,7 @@ import globalStyles from "./styles/globalStyles";
 import Controlbox from "./components/layout/Controlbox";
 import Visit from "./components/layout/Visit";
 import ModeButton from "./components/layout/Modebutton";
+import Register from "./components/Register";
 
 interface AduDataDto {
   temp: string;
@@ -380,8 +381,9 @@ function App() {
         <Div>
           {homemode === "홈" && (
             <div>
-              <WeatherDisplay />
-              <Grid />
+              {/* <WeatherDisplay />
+              <Grid /> */}
+              <Register></Register>
             </div>
           )}
 
