@@ -11,11 +11,12 @@ import { User } from '../user/user.entity';
 import { MailerService } from '@nestjs-modules/mailer';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
+import * as bcrypt from 'bcrypt';
 
 export class RegisterDto {
   email: string;
   name: string;
-  password: number;
+  password: string;
   face: string;
   bluetooth: string;
 }
@@ -147,12 +148,13 @@ export class AuthService {
       if (existingUser) {
         throw new ConflictException('이미 가입된 이메일입니다.');
       }
+      const hashedPassword = await bcrypt.hash(password, 10);
 
       // 2. 사용자 생성
       const user = this.userRepository.create({
         email,
         name,
-        password,
+        password: hashedPassword,
         face: face || '',
         bluetooth: bluetooth || '',
       });
@@ -176,7 +178,7 @@ export class AuthService {
       throw new BadRequestException('회원가입에 실패했습니다.');
     }
   }
-  async login(email: string, password: number) {
+  async login(email: string, password: string) {
     console.log('로그인 시도:', email);
 
     // 1. DB에서 유저 찾기
@@ -188,8 +190,8 @@ export class AuthService {
 
     // 2. 비밀번호 검증
     const isPasswordValid = await this.userService.validatePassword(
-      password.toString(),
-      user.password.toString(),
+      password,
+      user.password,
     );
     console.log('비밀번호 검증:', isPasswordValid);
 

@@ -15,7 +15,7 @@ export class User {
   face: string;
 
   @Column({ unique: true })
-  password: number;
+  password: string;
 
   @Column()
   bluetooth: string;

@@ -1,5 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString, IsNumber, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 export class RegisterDto {
   @IsEmail({}, { message: '유효한 이메일 주소를 입력해주세요.' })
@@ -10,10 +15,10 @@ export class RegisterDto {
   @IsNotEmpty({ message: '이름은 필수입니다.' })
   name: string;
 
-  @Type(() => Number)
-  @IsNumber({}, { message: '비밀번호는 숫자여야 합니다.' })
-  @Min(1000, { message: '비밀번호는 최소 4자리 이상이어야 합니다.' })
-  password: number;
+  @IsString()
+  @MinLength(4, { message: '비밀번호는 최소 4자 이상이어야 합니다.' })
+  @MaxLength(20, { message: '비밀번호는 최대 20자까지 가능합니다.' })
+  password: string;
 
   @IsString()
   face: string;
