@@ -33,7 +33,6 @@ import { UserModule } from './user/user.module';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: false, // 프로덕션에서는 false
     }),
-    ,
     EventEmitterModule.forRoot({ wildcard: true, delimiter: '.' }),
     // PythonModule,
     EventsModule,
