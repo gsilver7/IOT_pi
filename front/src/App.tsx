@@ -321,7 +321,7 @@ function App() {
           }}
           imageSrc="/User.svg"
         >
-          방문객
+          정보
         </Sidebutton>
       </Sidebar>
 
