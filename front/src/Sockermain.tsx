@@ -53,6 +53,7 @@ export const Socketmain = () => {
     if (socket) {
       console.log("📤 python 상태 전송:", python);
       socket.emit("python", python);
+      setPython(false);
     }
   }, [python]);
 
