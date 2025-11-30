@@ -15,6 +15,7 @@ import { UserModule } from './user/user.module';
 import { MailerAppModule } from './mailer/mailer.module';
 import { AuthModule } from './Auth/auth.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { FaceModule } from './face/face.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
     // PythonModule,
     EventsModule,
     UsbModule,
+    FaceModule,
     StreamModule,
     UserModule,
     WeatherModule,

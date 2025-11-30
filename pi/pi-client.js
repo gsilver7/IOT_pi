@@ -227,9 +227,7 @@ function startWebcamStreaming() {
 
     while (start !== -1 && end !== -1 && end > start) {
       const frame = frameBuffer.slice(start, end + 2);
-      
-      console.log(`📤 프레임 전송 시도: ${frame.length} bytes`);
-      
+            
       // AWS로 프레임 전송
       socket.emit('webcam-frame', {
         deviceId: 'pi-001',
