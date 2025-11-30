@@ -1,8 +1,6 @@
 import Contentbox from "../components/layout/Contentbox";
 import { LogoutButton } from "../components/Logoutbutton";
 import BluetoothRegister from "../components/BluetoothRegister";
-import { OnoffContext } from "../context/OnoffContext";
-import { useContext } from "react";
 
 const Info = () => {
 
