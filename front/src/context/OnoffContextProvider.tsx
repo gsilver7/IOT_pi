@@ -3,13 +3,13 @@ import type { FC, ReactNode } from "react";
 import { OnoffContext } from "./OnoffContext";
 
 const OnoffContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [hlight, setHlight] = useState<boolean>(false);
-  const [glight, setGlight] = useState<boolean>(false);
-  const [win, setWin] = useState<boolean>(false);
-  const [fan, setFan] = useState<boolean>(false);
-  const [hit, setHit] = useState<boolean>(false);
-  const [hum, setHum] = useState<boolean>(false);
-  const [door, setDoor] = useState<boolean>(false);
+  const [hlight, setHlight] = useState<number>(0);
+  const [glight, setGlight] = useState<number>(0);
+  const [win, setWin] = useState<number>(0);
+  const [fan, setFan] = useState<number>(0);
+  const [hit, setHit] = useState<number>(0);
+  const [hum, setHum] = useState<number>(0);
+  const [door, setDoor] = useState<number>(0);
   const [modetype, setModetype] = useState<string>("sudong");
   const [serverTime, setServerTime] = useState<string>("loading");
   const [temp, setTemp] = useState<string>("loading");

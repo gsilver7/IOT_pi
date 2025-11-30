@@ -12,9 +12,9 @@ export interface AduDataDto {
 }
 
 interface ControlMessage {
-  light: boolean;
-  w: boolean;
-  fan: boolean;
+  light: number;
+  w: number;
+  fan: number;
   mode: string;
 }
 

@@ -2,20 +2,20 @@ import { createContext } from "react";
 import type { Dispatch, SetStateAction } from "react";
 
 export interface OnoffContextType {
-  hlight: boolean;
-  setHlight: Dispatch<SetStateAction<boolean>>;
-  glight: boolean;
-  setGlight: Dispatch<SetStateAction<boolean>>;
-  win: boolean;
-  setWin: Dispatch<SetStateAction<boolean>>;
-  hum: boolean;
-  setHum: Dispatch<SetStateAction<boolean>>;
-  hit: boolean;
-  setHit: Dispatch<SetStateAction<boolean>>;
-  fan: boolean;
-  setFan: Dispatch<SetStateAction<boolean>>;
-  door: boolean;
-  setDoor: Dispatch<SetStateAction<boolean>>;
+  hlight: number;
+  setHlight: Dispatch<SetStateAction<number>>;
+  glight: number;
+  setGlight: Dispatch<SetStateAction<number>>;
+  win: number;
+  setWin: Dispatch<SetStateAction<number>>;
+  hum: number;
+  setHum: Dispatch<SetStateAction<number>>;
+  hit: number;
+  setHit: Dispatch<SetStateAction<number>>;
+  fan: number;
+  setFan: Dispatch<SetStateAction<number>>;
+  door: number;
+  setDoor: Dispatch<SetStateAction<number>>;
   modetype: string;
   setModetype: Dispatch<SetStateAction<string>>;
   serverTime: string;
@@ -33,19 +33,19 @@ export interface OnoffContextType {
 }
 
 export const OnoffContext = createContext<OnoffContextType>({
-  hlight: false,
+  hlight: 0,
   setHlight: () => {},
-  glight: false,
+  glight: 0,
   setGlight: () => {},
-  win: false,
+  win: 0,
   setWin: () => {},
-  hum: false,
+  hum: 0,
   setHum: () => {},
-  hit: false,
+  hit: 0,
   setHit: () => {},
-  fan: false,
+  fan: 0,
   setFan: () => {},
-  door: false,
+  door: 0,
   setDoor: () => {},
   modetype: "sudong",
   setModetype: () => {},
