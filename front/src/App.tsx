@@ -2,7 +2,6 @@
 import useSocket from "./hooks/useSocket";
 import { useEffect, useState, useContext } from "react";
 import { OnoffContext } from "./context/OnoffContext";
-import WebcamStreamClient from "./components/WebcamStreamClient";
 import WeatherDisplay from "./components/WeatherDisplay";
 import Grid from "./components/Grid";
 import styled from "@emotion/styled";
@@ -11,8 +10,6 @@ import Sidebutton from "./components/layout/Sidebutton";
 import Contentbox from "./components/layout/Contentbox";
 import Tempbox from "./components/layout/Tempbox";
 import globalStyles from "./styles/globalStyles";
-import Controlbox from "./components/layout/Controlbox";
-import Visit from "./components/layout/Visit";
 import ModeButton from "./components/layout/Modebutton";
 import { useNavigate } from "react-router-dom";
 
@@ -296,6 +293,7 @@ function App() {
         <Sidebutton
           onClick={() => {
             setHomemode("제어");
+            navigate("/control");
           }}
           imageSrc="/Control.svg"
         >
@@ -304,6 +302,7 @@ function App() {
         <Sidebutton
           onClick={() => {
             setHomemode("현관");
+            navigate("/door");
           }}
           imageSrc="/Video.svg"
         >
@@ -312,6 +311,7 @@ function App() {
         <Sidebutton
           onClick={() => {
             setHomemode("방문객");
+            navigate("/visitor");
           }}
           imageSrc="/User.svg"
         >
@@ -357,6 +357,7 @@ function App() {
         <Sidebutton
           onClick={() => {
             setHomemode("제어");
+            navigate("/control");
           }}
           imageSrc="/Control.svg"
         >
@@ -365,6 +366,7 @@ function App() {
         <Sidebutton
           onClick={() => {
             setHomemode("현관");
+            navigate("/door");
           }}
           imageSrc="/Video.svg"
         >
@@ -373,6 +375,7 @@ function App() {
         <Sidebutton
           onClick={() => {
             setHomemode("방문객");
+            navigate("/visitor");
           }}
           imageSrc="/User.svg"
         >
@@ -430,30 +433,6 @@ function App() {
                 co2={co2}
                 light={light}
               ></Tempbox>
-            </div>
-          )}
-
-          {homemode === "제어" && (
-            <div>
-              <Contentbox title="제어" description="집 안 장치 제어" />
-              <Controlbox />
-            </div>
-          )}
-
-          {homemode === "현관" && (
-            <div>
-              <Contentbox title="현관" description="현관 CCTV 관찰" />
-              <WebcamStreamClient />
-            </div>
-          )}
-
-          {homemode === "방문객" && (
-            <div>
-              <Contentbox
-                title="방문객"
-                description="현관 CCTV로 방문객 감지"
-              />
-              <Visit></Visit>
             </div>
           )}
         </Div>
