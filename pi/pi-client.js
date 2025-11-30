@@ -194,6 +194,155 @@ socket.on('python', (data) => {
   }
 });
 
+socket.on('compare', (data) => {
+  console.log('🔍 얼굴 비교 요청 수신:', data);
+
+  // 1. 필요한 데이터 추출
+  // data 구조: { id, face, image }
+  const storedVectorPath = data.face; // DB에 저장된 벡터 파일 경로
+  const inputImageBase64 = data.image; // 지금 찍은 얼굴 이미지
+  const userId = data.id || 'unknown';
+
+  // 스크립트 경로 (face_compare.py가 있는 위치)
+  // PYTHON_SCRIPT_PATH가 있는 폴더와 같다고 가정합니다.
+  const compareScriptPath = path.join(path.dirname(PYTHON_SCRIPT_PATH), 'face_compare.py');
+  const venvPath = PYTHON_VENV_PATH;
+
+  if (!inputImageBase64 || !storedVectorPath) {
+    console.error('❌ 비교할 데이터가 부족합니다.');
+    socket.emit('compare-result', { success: false, error: 'Missing data' });
+    return;
+  }
+
+  try {
+    // 2. 입력 이미지 파일로 저장 (비교용)
+    const base64Data = inputImageBase64.replace(/^data:image\/\w+;base64,/, "");
+    const imgBuffer = Buffer.from(base64Data, 'base64');
+    
+    // 임시 파일명: compare_userid_timestamp.jpg
+    const tempFileName = `compare_${userId}_${Date.now()}.jpg`;
+    const tempFilePath = path.join(__dirname, tempFileName);
+
+    console.log(`💾 비교용 이미지 저장: ${tempFilePath}`);
+
+    fs.writeFile(tempFilePath, imgBuffer, (err) => {
+      if (err) {
+        console.error('❌ 이미지 저장 실패:', err);
+        socket.emit('compare-result', { success: false, error: 'Image save failed' });
+        return;
+      }
+
+      console.log('✅ 이미지 저장 완료. 비교 스크립트 실행...');
+
+      // ---------------------------------------------------------
+      // 3. Python 실행 (face_compare.py)
+      // ---------------------------------------------------------
+      // 인자 순서: [스크립트, 벡터경로, 이미지경로]
+      // 파이썬: sys.argv[1]=vector_path, sys.argv[2]=image_path
+      const args = ['-u', compareScriptPath, storedVectorPath, tempFilePath];
+      
+      console.log(`🐍 Python 실행: ${venvPath} ${args.join(' ')}`);
+      
+      const pythonProcess = spawn(venvPath, args);
+
+      let resultBuffer = '';
+      let errorBuffer = '';
+
+      pythonProcess.stdout.on('data', (output) => {
+        const text = output.toString();
+        // console.log(`[Python] ${text}`); // 로그가 너무 많으면 주석 처리
+        resultBuffer += text;
+      });
+
+      pythonProcess.stderr.on('data', (error) => {
+        errorBuffer += error.toString();
+      });
+
+      pythonProcess.on('close', (code) => {
+        console.log(`🐍 비교 프로세스 종료 (코드: ${code})`);
+
+        // 임시 이미지 삭제
+        fs.unlink(tempFilePath, () => console.log('🗑️ 임시 이미지 삭제 완료'));
+
+        if (code === 0) {
+          // 4. 결과 파싱 (JSON)
+          let comparisonResult = { success: false, match: false };
+          
+          try {
+            // 파이썬 로그가 섞여있을 수 있으므로 "=== COMPARE RESULT ===" 다음 줄을 찾거나
+            // JSON 형태인 줄을 찾아서 파싱해야 합니다.
+            
+            // 방법 A: "=== COMPARE RESULT ===" 키워드 활용
+            const lines = resultBuffer.split('\n');
+            const targetIndex = lines.findIndex(line => line.includes("=== COMPARE RESULT ==="));
+            
+            if (targetIndex !== -1 && lines[targetIndex + 1]) {
+                comparisonResult = JSON.parse(lines[targetIndex + 1]);
+            } else {
+                // 방법 B: 전체 텍스트에서 JSON 객체 찾기 (Fallback)
+                // { "success": true ... } 형태의 문자열을 정규식으로 찾음
+                const jsonMatch = resultBuffer.match(/\{.*"match":.*\}/);
+                if (jsonMatch) {
+                    comparisonResult = JSON.parse(jsonMatch[0]);
+                }
+            }
+            
+            console.log('📊 최종 비교 결과:', comparisonResult);
+
+            // 5. 결과에 따라 동작 수행
+            if (comparisonResult.success && comparisonResult.match) {
+                console.log('🔓 [인증 성공] 문을 엽니다!');
+                
+                // 백엔드(NestJS)로 결과 전송
+                socket.emit('compare-result', { 
+                    success: true, 
+                    match: true, 
+                    userId: userId,
+                    distance: comparisonResult.distance 
+                });
+                
+                // (선택) 아두이노 문 열기 명령 등 추가 가능
+                // serialPort.write('OPEN_DOOR'); 
+
+            } else {
+                console.log('🔒 [인증 실패] 얼굴이 일치하지 않습니다.');
+                socket.emit('compare-result', { 
+                    success: true, 
+                    match: false, 
+                    message: '얼굴 불일치' 
+                });
+            }
+
+          } catch (e) {
+            console.error('❌ JSON 파싱 에러:', e);
+            console.error('원본 출력:', resultBuffer);
+            socket.emit('compare-result', { success: false, error: 'Result parsing failed' });
+          }
+
+        } else {
+          // ---------------------------------------------------------
+          // [수정] 실패 시 원인 분석 로직 강화
+          // ---------------------------------------------------------
+          console.error('❌ Python 실행 실패 (종료 코드:', code, ')');
+          
+          // 1. stderr가 비어있다면 stdout(resultBuffer)에 에러 내용이 있는지 확인
+          const errorMsg = errorBuffer || resultBuffer || '알 수 없는 에러';
+          
+          console.error('🔴 상세 에러 내용:', errorMsg); // 👈 이걸 봐야 원인을 알 수 있습니다!
+
+          socket.emit('compare-result', { 
+            success: false, 
+            error: errorMsg 
+          });
+        }
+      });
+    });
+
+  } catch (e) {
+    console.error('비교 처리 중 예외:', e);
+  }
+});
+
 // 시리얼 포트 연결 성공
 port.on('open', () => {
   console.log('✅ 아두이노 시리얼 포트 연결:', SERIAL_PORT);

@@ -199,4 +199,45 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.warn('⚠️ Python 결과에 필요한 데이터가 부족합니다 (실패했거나 userId 누락)');
     }
   }
+  @SubscribeMessage('compare-result')
+  async handleCompareResult(@MessageBody() data: any) {
+    console.log('🔍 얼굴 비교 결과 수신:', data);
+
+    // 1. 파이썬 스크립트 실행이 성공했는지 확인
+    if (data.success) {
+      
+      // 2. 얼굴이 일치하는지 확인
+      if (data.match) {
+        console.log(`🔓 [인증 성공] 문 열림 (User: ${data.userId}, 거리: ${data.distance})`);
+
+        // (선택사항) 출입 기록을 DB에 저장하려면 여기서 UsersService 등을 호출
+        // await this.usersService.createAccessLog(data.userId, 'SUCCESS');
+
+        // 3. 프론트엔드에게 "문 열렸어!" 라고 알림
+        this.server.emit('door-status', { 
+          status: 'OPEN', 
+          message: '본인 인증 성공! 문이 열립니다.',
+          userId: data.userId 
+        });
+
+      } else {
+        console.log(`🔒 [인증 실패] 불일치 (거리: ${data.distance})`);
+
+        // 프론트엔드에게 "실패했어" 알림
+        this.server.emit('door-status', { 
+          status: 'DENIED', 
+          message: '얼굴이 일치하지 않습니다.' 
+        });
+      }
+
+    } else {
+      // 파이썬 스크립트 자체 에러 (경로 없음, 라이브러리 에러 등)
+      console.error('❌ 비교 스크립트 에러:', data.error);
+      
+      this.server.emit('door-status', { 
+        status: 'ERROR', 
+        message: '시스템 오류가 발생했습니다.' 
+      });
+    }
+  }
 }
