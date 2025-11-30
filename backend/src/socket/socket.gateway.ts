@@ -25,6 +25,7 @@ interface ControlMessage {
   light: boolean;
   w: boolean;
   fan: boolean;
+  modetype: string;
 }
 
 @WebSocketGateway({
@@ -61,7 +62,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): void {
     console.log(`[${client.id}] 센서 데이터 수신:`, payload);
     console.log(
-      `창문: ${payload.w}, 조명: ${payload.light}, 팬: ${payload.fan}`,
+      `창문: ${payload.w}, 조명: ${payload.light}, 팬: ${payload.fan}, 모드: ${payload.modetype}`
     );
     client.broadcast.emit('control', payload);
   }

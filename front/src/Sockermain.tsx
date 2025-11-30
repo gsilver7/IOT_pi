@@ -15,6 +15,7 @@ interface ControlMessage {
   light: boolean;
   w: boolean;
   fan: boolean;
+  modetype: string;
 }
 
 export const Socketmain = () => {
@@ -28,7 +29,7 @@ export const Socketmain = () => {
     setHumi,
     setCo2,
     setLight,
-    python,
+    modetype
   } = useContext(OnoffContext);
 
   // 센서 데이터 상태 관리
@@ -39,22 +40,14 @@ export const Socketmain = () => {
       light: hlight,
       w: win,
       fan: fan,
+      modetype:modetype
     };
 
     if (socket) {
       console.log("📤 제어 상태 전송:", controlMessage);
       socket.emit("control", controlMessage);
     }
-  }, [hlight, win, fan, socket]);
-
-  useEffect(() => {
-
-    if (socket) {
-      console.log("📤 python 상태 전송:", python);
-      socket.emit("python", python);
-    }
-  }, [python]);
-
+  }, [hlight, win, fan, modetype, socket]);
 
   // 2. 소켓 이벤트 리스너 등록 (Receive)
   useEffect(() => {

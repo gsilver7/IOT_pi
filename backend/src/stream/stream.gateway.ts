@@ -174,6 +174,7 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     return { success: true, message: 'Sensor data received' };
   }
+  
   @SubscribeMessage('python-result')
   async handlePythonResult(@MessageBody() data: any) {
     console.log('🐍 Python 결과 수신:', data);

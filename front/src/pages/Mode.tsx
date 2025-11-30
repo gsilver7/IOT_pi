@@ -22,15 +22,16 @@ const Sdiv = styled.div`
   padding: 3%;
 `;
 const Mode = () => {
+  
   return (
     <div>
       <Contentbox title="모드" description="집 제어 환경 설정" />
       <Sdiv>
         <Modebox>
-          <ModeButton ttt="수동" />
-          <ModeButton ttt="재실" />
-          <ModeButton ttt="취침" />
-          <ModeButton ttt="외출" />
+          <ModeButton ttt="sudong" />
+          <ModeButton ttt="in" />
+          <ModeButton ttt="zzz" />
+          <ModeButton ttt="out" />
         </Modebox>
       </Sdiv>
     </div>
