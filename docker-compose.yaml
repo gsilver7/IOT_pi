@@ -21,7 +21,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - app-network
+      - iot-pi-network
 
   iot-pi-proxy:
     image: nginx:alpine
@@ -40,3 +40,6 @@ services:
 networks:
   iot-pi-network:
     driver: bridge
+
+volumes:
+  redis-data:
