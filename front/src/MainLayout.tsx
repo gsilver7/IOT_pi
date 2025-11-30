@@ -53,7 +53,6 @@ const Titlebar = styled.div`
   top: 0;
   position: fixed;
   width: 100%;
-  left: 13%;
 `;
 const HomeModeText = styled.span`
   @media (max-width: 800px) {
@@ -74,7 +73,7 @@ const Timebar = styled.div`
   margin-left: auto;
   margin-right: 0;
   padding: 0;
-  padding-right: 15%;
+  padding-right: 30%;
   @media (max-width: 800px) {
     font-size: 20px;
     padding-right: 6%;
@@ -87,14 +86,14 @@ const Timebar = styled.div`
 
 const ContentArea = styled.div`
   position: relative;
-  /* 사이드바 너비(13%)만큼 왼쪽을 비워둡니다 */
-  width: 87%;
   left: 13%;
   top: 8%;
+  width: 87%;
   /* 모바일 대응: 사이드바가 없어지면 꽉 채우기 */
   @media (max-width: 800px) {
     margin-left: 0;
     width: 100%;
+    left: 0;
   }
 `;
 
@@ -120,9 +119,10 @@ const Mobabar = styled.div<{ $toggle: boolean }>`
 `;
 
 const Div = styled.div`
-  width: 100vw;
-  height: 100vh;
-  position: relative;
+  width: 100%;
+  height: 100%;
+  position: flex;
+  flex-direction: row; /* 가로 방향 배치 */
 `;
 const MainLayout = ({
   toggle,
