@@ -9,7 +9,7 @@ export class AuthController {
   @Post('send-verification-email')
   @HttpCode(HttpStatus.OK)
   async sendVerificationEmail(@Body() sendEmailDto: SendVerificationEmailDto) {
-    await this.authService.sendVerificationEmail(sendEmailDto.email);
+    await this.authService.sendVerificationEmail(sendEmailDto); // DTO 전체 전달
     return {
       message: '인증 코드가 이메일로 성공적으로 발송되었습니다.',
       email: sendEmailDto.email,
