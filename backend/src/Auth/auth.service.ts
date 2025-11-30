@@ -69,22 +69,22 @@ export class AuthService {
   }
 
   async verifyCode(email: string, code: string): Promise<boolean> {
-    const verificationCode = await this.verificationCodeRepository.findOne({
+    const record = await this.verificationCodeRepository.findOne({
       where: { email, code, isUsed: false },
     });
 
-    if (!verificationCode) {
+    if (!record) {
       return false;
     }
 
     // 만료 시간 확인
-    if (new Date() > verificationCode.expiresAt) {
+    if (new Date() > record.expiresAt) {
       return false;
     }
 
     // 사용 처리
-    verificationCode.isUsed = true;
-    await this.verificationCodeRepository.save(verificationCode);
+    record.isUsed = true;
+    await this.verificationCodeRepository.save(record);
 
     return true;
   }
