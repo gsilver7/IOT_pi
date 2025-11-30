@@ -54,7 +54,7 @@ const WebcamStreamClient = () => {
       });
 
       // 프레임 수신
-      socket.on('stream-data', (data) => {
+      socket.on('frame', (data) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext('2d');

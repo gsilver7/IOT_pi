@@ -194,9 +194,13 @@ socket.on('control', (data) => {
 let ffmpegProcess = null;
 
 function startWebcamStreaming() {
-  if (ffmpegProcess) return;
+  if (ffmpegProcess) {
+    console.log('⚠️ 이미 스트리밍 중');
+    return;
+  }
   
-  console.log('📹 웹캠 스트리밍 시작...');
+  console.log('📹 웹캠 스트리밍 시작 시도...');
+  console.log('📹 소켓 연결:', socket.connected);
   
   // ffmpeg로 웹캠 캡처
   ffmpegProcess = spawn('ffmpeg', [
@@ -210,16 +214,21 @@ function startWebcamStreaming() {
   ]);
 
   let frameBuffer = Buffer.alloc(0);
+  let frameCount = 0;
 
   ffmpegProcess.stdout.on('data', (data) => {
+    frameCount++;
+    console.log(`📹 ffmpeg stdout 데이터 수신: ${data.length} bytes (프레임 ${frameCount})`);
+    
     frameBuffer = Buffer.concat([frameBuffer, data]);
 
-    // JPEG 시작(0xFFD8)과 끝(0xFFD9) 마커 찾기
     let start = frameBuffer.indexOf(Buffer.from([0xFF, 0xD8]));
     let end = frameBuffer.indexOf(Buffer.from([0xFF, 0xD9]));
 
     while (start !== -1 && end !== -1 && end > start) {
       const frame = frameBuffer.slice(start, end + 2);
+      
+      console.log(`📤 프레임 전송 시도: ${frame.length} bytes`);
       
       // AWS로 프레임 전송
       socket.emit('webcam-frame', {
@@ -228,16 +237,15 @@ function startWebcamStreaming() {
         timestamp: new Date().toISOString()
       });
 
-      // 버퍼에서 전송된 프레임 제거
       frameBuffer = frameBuffer.slice(end + 2);
       start = frameBuffer.indexOf(Buffer.from([0xFF, 0xD8]));
       end = frameBuffer.indexOf(Buffer.from([0xFF, 0xD9]));
     }
   });
 
+  // 🆕 stderr 로그 활성화 (중요!)
   ffmpegProcess.stderr.on('data', (data) => {
-    // ffmpeg 로그 (필요시 주석 해제)
-    // console.error('ffmpeg:', data.toString());
+    console.log('📹 ffmpeg 로그:', data.toString());
   });
 
   ffmpegProcess.on('close', (code) => {
@@ -246,8 +254,12 @@ function startWebcamStreaming() {
   });
 
   ffmpegProcess.on('error', (error) => {
-    console.error('🔴 ffmpeg 에러:', error.message);
+    console.error('🔴 ffmpeg 실행 에러:', error.message);
+    ffmpegProcess = null;
   });
+  
+  // 🆕 프로세스 시작 확인
+  console.log('📹 ffmpeg 프로세스 시작됨, PID:', ffmpegProcess.pid);
 }
 
 function stopWebcamStreaming() {
