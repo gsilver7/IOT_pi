@@ -111,7 +111,7 @@ export const Socketmain = () => {
       socket.off("adu-data", handleData);
       socket.off("mac", handlemacData);
     };
-  }, [socket]);
+  }, [socket,light]);
 
   // UI에서 필요한 데이터만 반환
   return null;
