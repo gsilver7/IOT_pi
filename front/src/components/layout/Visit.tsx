@@ -3,6 +3,8 @@ import styled from "@emotion/styled";
 import ToggleButton from './ToggleButton';
 import { OnoffContext } from '../../context/OnoffContext';
 import { useContext } from 'react';
+import WebcamStreamClient from "../WebcamStreamClient";
+
 
 const Sh2 = styled.h2`
   color: #212121;
@@ -47,7 +49,7 @@ const Light = () => {
     <Sdiv>
       <IndivT>
         <Sh2>방문객 사진</Sh2>
-
+        <WebcamStreamClient></WebcamStreamClient>
       </IndivT>   
       <Indiv>
         <Sh2>방문객 정보</Sh2>

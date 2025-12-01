@@ -208,19 +208,10 @@ const MainLayout = ({
         </Sidebutton>
         <Sidebutton
           onClick={() => {
-            setHomemode("현관");
-            navigate("/door");
-          }}
-          imageSrc="/Video.svg"
-        >
-          현관
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
             setHomemode("방문객");
             navigate("/visitor");
           }}
-          imageSrc="/User.svg"
+          imageSrc="/Video.svg"
         >
           방문객
         </Sidebutton>
@@ -274,19 +265,10 @@ const MainLayout = ({
         </Sidebutton>
         <Sidebutton
           onClick={() => {
-            setHomemode("현관");
-            navigate("/door");
-          }}
-          imageSrc="/Video.svg"
-        >
-          현관
-        </Sidebutton>
-        <Sidebutton
-          onClick={() => {
             setHomemode("방문객");
             navigate("/visitor");
           }}
-          imageSrc="/User.svg"
+          imageSrc="/Video.svg"
         >
           방문객
         </Sidebutton>
