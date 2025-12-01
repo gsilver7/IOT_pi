@@ -10,7 +10,6 @@ const OnoffContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [hit, setHit] = useState<number>(0);
   const [hum, setHum] = useState<number>(0);
   const [door, setDoor] = useState<number>(0);
-  const [modetype, setModetype] = useState<string>("sudong");
   const [serverTime, setServerTime] = useState<string>("loading");
   const [temp, setTemp] = useState<string>("loading");
   const [humi, setHumi] = useState<string>("loading");
@@ -34,8 +33,6 @@ const OnoffContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
       setHum,
       door,
       setDoor,
-      modetype,
-      setModetype,
       serverTime,
       setServerTime,
       temp,
@@ -57,7 +54,6 @@ const OnoffContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
       hit,
       hum,
       door,
-      modetype,
       serverTime,
       temp,
       setTemp,

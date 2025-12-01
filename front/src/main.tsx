@@ -18,6 +18,7 @@ import Home from "./pages/Home.tsx";
 import Mode from "./pages/Mode.tsx";
 import { Socketmain } from "./Sockermain.tsx";
 import Refresh from "./components/Refresh.tsx";
+import { GlobalStateProvider } from "./context/GlobalStateContext.tsx";
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const token = localStorage.getItem("token");
@@ -32,6 +33,7 @@ export const RootComponent = () => {
   return (
     <BrowserRouter>
       <Refresh />
+      <GlobalStateProvider>
       <GridContextProvider>
         <OnoffContextProvider>
           <Socketmain />
@@ -67,6 +69,7 @@ export const RootComponent = () => {
           </Routes>
         </OnoffContextProvider>
       </GridContextProvider>
+    </GlobalStateProvider>
     </BrowserRouter>
   );
 };

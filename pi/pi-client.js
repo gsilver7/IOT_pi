@@ -6,8 +6,8 @@ const fs = require('fs');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 const { spawn } = require('child_process');
-const { initBleScanner } = require('./ble-scanner'); // 이 줄 확인
-const { scanClassicBluetooth } = require('./classic-bluetooth-scanner'); // 추가
+const { initUnifiedBluetoothScanner, 
+  stopUnifiedBluetoothScanner  } = require('./ble-scanner'); // 이 줄 확인
 
 
 const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
@@ -38,14 +38,14 @@ const socket = io(`${AWS_SERVER}`, {
 socket.on('connect', () => {
   console.log('✅ AWS 서버 연결 성공:', socket.id);
   startWebcamStreaming();
-  initBleScanner(socket);
-  scanClassicBluetooth(socket); // 추가
+    initUnifiedBluetoothScanner(socket);
 });
 
 // 연결 끊김
 socket.on('disconnect', (reason) => {
   console.warn('❌ AWS 서버 연결 끊김:', reason);
   stopWebcamStreaming();
+  stopUnifiedBluetoothScanner();
 });
 
 // 연결 에러
@@ -504,6 +504,7 @@ function stopWebcamStreaming() {
 process.on('SIGINT', () => {
   console.log('\n종료 중...');
   stopWebcamStreaming();
+  stopUnifiedBluetoothScanner();
   port.close();
   socket.disconnect();
   process.exit();

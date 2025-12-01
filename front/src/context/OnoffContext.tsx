@@ -16,8 +16,6 @@ export interface OnoffContextType {
   setFan: Dispatch<SetStateAction<number>>;
   door: number;
   setDoor: Dispatch<SetStateAction<number>>;
-  modetype: string;
-  setModetype: Dispatch<SetStateAction<string>>;
   serverTime: string;
   setServerTime: Dispatch<SetStateAction<string>>;
   temp: string;
@@ -47,8 +45,6 @@ export const OnoffContext = createContext<OnoffContextType>({
   setFan: () => {},
   door: 0,
   setDoor: () => {},
-  modetype: "sudong",
-  setModetype: () => {},
   serverTime: "loading",
   setServerTime: () => {},
   temp: "loading",

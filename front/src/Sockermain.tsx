@@ -2,6 +2,7 @@
 import { useEffect, useContext } from "react";
 import useSocket from "./hooks/useSocket";
 import { OnoffContext } from "./context/OnoffContext";
+import { useGlobalState } from "./context/GlobalStateContext";
 
 // DTO 타입 정의
 export interface AduDataDto {
@@ -33,6 +34,9 @@ interface ControlMessage {
 }
 
 export const Socketmain = () => {
+
+  const { modetype, triggerStateB } = useGlobalState();
+
   const socket = useSocket();
   const {
     hlight,
@@ -42,8 +46,7 @@ export const Socketmain = () => {
     setTemp,
     setHumi,
     setCo2,
-    setLight,
-    modetype
+    setLight
   } = useContext(OnoffContext);
 
   // 센서 데이터 상태 관리
@@ -97,8 +100,7 @@ export const Socketmain = () => {
     
     alert(`등록된 사용자의 블루투스 장치가 감지되었습니다!\n사용자: ${userNames}\nMAC: ${macAddresses}`);
     
-    // 원하는 추가 동작 수행
-    // 예: 자동으로 얼굴 인식 시작, UI 업데이트 등
+     triggerStateB();
   }
     // 이벤트 등록
     socket.on("connect", handleConnect);
