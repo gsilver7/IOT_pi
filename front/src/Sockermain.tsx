@@ -99,9 +99,9 @@ export const Socketmain = () => {
     const macAddresses = data.macs.join(', ');
     
     console.log(`등록된 사용자의 블루투스 장치가 감지되었습니다!\n사용자: ${userNames}\nMAC: ${macAddresses}`);
-
-    triggerStateB();
     
+    if (modetype== 'sudong'){console.log("수동에서는 변경불가!");}
+    else {console.log("수동이 아니므로 자동관리!");triggerStateB();}
   }
     // 이벤트 등록
     socket.on("connect", handleConnect);

@@ -16,7 +16,6 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
 
   const triggerStateB = () => {
-
     console.log('🔄 상태를 in으로 변경');
     setModetype('in');
     
