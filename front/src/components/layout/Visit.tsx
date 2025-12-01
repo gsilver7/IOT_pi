@@ -18,9 +18,16 @@ const Sdiv = styled.div`
   padding:3%;
   display:grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+
   column-gap: 3%;
   height:55vh;
+
+  @media (max-width: 1200px) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height:100vh;
+  }
 `;
 
 const Indiv = styled.div`
@@ -29,6 +36,11 @@ const Indiv = styled.div`
   margin-bottom:5%;
   position:relative;
   height:25vh;
+  @media (max-width: 1200px) {
+    
+    width:100%;
+    height:30vh;
+  }
 `;
 const IndivT = styled.div`
   border: 1px solid #E6E7E9;
