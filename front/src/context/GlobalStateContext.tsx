@@ -27,8 +27,7 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
     lightRef.current = light;
   }, [light]);
 
-  const triggerStateB = useCallback(() => {
-    
+  const triggerStateB = useCallback((matched:boolean) => {
     
     if (modetypeRef.current== 'sudong'){
       console.log("수동에서는 변경불가!");
@@ -38,6 +37,13 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
+    }
+
+
+    if (matched == false){
+      console.log("외출");
+      setModetype('out');
+      return;
     }
 
     if (Number(lightRef.current)<500){

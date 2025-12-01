@@ -13,16 +13,9 @@ export interface AduDataDto {
 }
 export interface MacMatchDto {
   matched: boolean;
-  macs: string[];
-  devices: Array<{
-    mac: string;
-    rssi: number;
-    name: string;
-  }>;
-  users: Array<{
-    id: number;
-    name: string;
-  }>;
+  macs: any;
+  devices: any;
+  users: any;
   timestamp: string;
 }
 
@@ -92,15 +85,21 @@ export const Socketmain = () => {
       setLight(payload.light);
     };
 
-    const handlemacData = (data:MacMatchDto) => {
-    console.log('✅ 등록된 블루투스 장치 감지!', data);
+  const handlemacData = (data:MacMatchDto) => {
+    if (data.matched==true) {
+      console.log('✅ 등록된 블루투스 장치 감지!', data);
     
-    const userNames = (data.users ?? []).map(u => u.name).join(', ');    
-    const macAddresses = data.macs.join(', ');
-    
-    console.log(`등록된 사용자의 블루투스 장치가 감지되었습니다!\n사용자: ${userNames}\nMAC: ${macAddresses}`);
-    
-    triggerStateB();
+      const userNames = (data.users ?? []).map(u => u.name).join(', ');    
+      const macAddresses = data.macs.join(', ');
+      
+      console.log(`등록된 사용자의 블루투스 장치가 감지되었습니다!\n사용자: ${userNames}\nMAC: ${macAddresses}`);
+      
+      
+    }
+
+    else {console.log('등록된 블루투스 장치 미감지!', data);}
+
+    triggerStateB(data.matched);
   }
     // 이벤트 등록
     socket.on("connect", handleConnect);

@@ -175,6 +175,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // client.emit('mac', { ... });
       } else {
         console.log('❌ 일치하는 MAC 주소 없음');
+        this.server.emit('mac', {
+          matched: false,
+          timestamp: new Date().toISOString(),
+        });
       }
 
     } catch (error) {
