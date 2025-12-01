@@ -24,7 +24,9 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, [modetype]);
 
   useEffect(() => {
-    lightRef.current = Number(light);
+    const numericLight = Number(light);
+    lightRef.current = isNaN(numericLight) ? 0 : numericLight;
+    console.log(`[light Context Update] light: ${light}, lightRef.current: ${lightRef.current}`);
     
   }, [light]);
 
