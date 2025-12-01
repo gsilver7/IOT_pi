@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
-import { useContext } from "react";
-import { OnoffContext } from "../../context/OnoffContext";
+import { useGlobalState } from "../../context/GlobalStateContext";
 
 const Sbutton = styled.button<{ ttt: string; mode: string }>`
   background: ${(props) => (props.mode == props.ttt ? "#5850ec" : "#E3E3E3")};
@@ -19,11 +18,11 @@ interface ToggleButtonProps {
 }
 
 const ModeButton = ({ ttt }: ToggleButtonProps) => {
-  const { modetype, setModetype } = useContext(OnoffContext);
+  const { modetype, setModeType } = useGlobalState();
 
   const h=(ttt === "sudong")?"수동":(ttt === "in")?"재실":(ttt === "zzz")?"취침":"외출"
   return (
-    <Sbutton onClick={() => setModetype(ttt)} mode={modetype} ttt={ttt}>
+    <Sbutton onClick={() => setModeType(ttt)} mode={modetype} ttt={ttt}>
       {h}
     </Sbutton>
   );
