@@ -1,5 +1,5 @@
 // GlobalStateContext.tsx
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef,useCallback } from 'react';
 
 
 interface GlobalStateContextType {
@@ -15,7 +15,11 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const timerRef = useRef<number | null>(null);
 
 
-  const triggerStateB = () => {
+  const triggerStateB = useCallback(() => {
+    if (modetype== 'sudong'){
+      console.log("수동에서는 변경불가!");
+      return;
+    }
     console.log('🔄 상태를 in으로 변경');
     setModetype('in');
     
@@ -29,7 +33,7 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
       console.log('⏰ 1분 경과 - 상태를 out로 복귀');
       setModetype('out');
     }, 60000); // 60초
-  };
+  },[modetype]);
 
   // 컴포넌트 언마운트 시 타이머 정리
   useEffect(() => {
