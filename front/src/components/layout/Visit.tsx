@@ -38,9 +38,6 @@ const IndivT = styled.div`
   grid-row: span 2;
   
   `;
-const Sp = styled.p`
-  font-weight:600;
-`;
 
 const Light = () => {
 
