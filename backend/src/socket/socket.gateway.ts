@@ -11,6 +11,9 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Interval } from '@nestjs/schedule';
 import { OnEvent } from '@nestjs/event-emitter';
+import { User } from '../user/user.entity'; // User 엔티티 import 경로에 맞게 수정
+import { Repository, Not, IsNull } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 interface AduDataDto {
   temp: string;
@@ -40,6 +43,12 @@ interface ControlMessage {
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
+
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
 
   private readonly logger = new Logger(EventsGateway.name);
 
@@ -96,23 +105,85 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.broadcast.emit('python', payload);
   }
   @SubscribeMessage('bluetooth-scan')
-  handleBluetoothScan(
+  async handleBluetoothScan(
     @MessageBody() payload: any,
     @ConnectedSocket() client: Socket,
-  ): void {
+  ): Promise<void> {
     console.log(`[${client.id}] 블루투스 스캔 데이터 수신:`, payload);
 
-    // payload 구조 예시:
+    // payload 구조:
     // {
     //   deviceId: 'pi-001',
     //   devices: [
-    //     { mac: "AA:BB:CC...", rssi: -80, name: "Mi Band" },
-    //     ...
+    //     { mac: "AA:BB:CC:DD:EE:FF", rssi: -80, name: "Mi Band" },
     //   ]
     // }
 
-    // 만약 프론트엔드(대시보드)에도 이 데이터를 실시간으로 보여주려면 아래 코드를 사용합니다.
-    // client.broadcast.emit('dashboard-bluetooth-data', payload); 
+    try {
+      // 1. 스캔된 MAC 주소 추출
+      const scannedMacs = payload.devices?.map(device => device.mac) || [];
+      
+      if (scannedMacs.length === 0) {
+        console.log('스캔된 블루투스 장치가 없습니다.');
+        return;
+      }
+
+      console.log('스캔된 MAC 주소들:', scannedMacs);
+
+      // 2. 데이터베이스에서 모든 사용자의 블루투스 MAC 주소 조회
+      const users = await this.userRepository.find({
+        where: {
+          bluetooth: Not(IsNull()), // bluetooth 칼럼이 null이 아닌 것만
+        },
+        select: ['id', 'bluetooth'], // 필요한 칼럼만 조회
+      });
+
+      // 3. DB의 MAC 주소들 추출 (중복 제거)
+      const dbMacs = users
+        .map(user => user.bluetooth)
+        .filter(mac => mac && mac.trim() !== '');
+
+      console.log('DB에 저장된 MAC 주소들:', dbMacs);
+
+      // 4. 겹치는 MAC 주소 찾기
+      const matchedMacs = scannedMacs.filter(scannedMac => 
+        dbMacs.some(dbMac => 
+          dbMac.toUpperCase() === scannedMac.toUpperCase()
+        )
+      );
+
+      // 5. 겹치는 MAC 주소가 있으면 프론트로 전송
+      if (matchedMacs.length > 0) {
+        console.log('✅ 일치하는 MAC 주소 발견:', matchedMacs);
+        
+        // 일치하는 MAC 주소와 해당 장치 정보를 함께 전송
+        const matchedDevices = payload.devices.filter(device =>
+          matchedMacs.some(mac => 
+            mac.toUpperCase() === device.mac.toUpperCase()
+          )
+        );
+
+        // 프론트엔드로 소켓 전송
+        this.server.emit('mac', {
+          matched: true,
+          macs: matchedMacs,
+          devices: matchedDevices,
+          timestamp: new Date().toISOString(),
+        });
+
+        // 또는 특정 클라이언트에만 전송하려면:
+        // client.emit('mac', { ... });
+      } else {
+        console.log('❌ 일치하는 MAC 주소 없음');
+      }
+
+    } catch (error) {
+      console.error('블루투스 스캔 처리 중 오류:', error);
+      client.emit('error', {
+        message: '블루투스 데이터 처리 실패',
+        error: error.message,
+      });
+    }
   }
   @Interval(10000)
   handleInterval() {

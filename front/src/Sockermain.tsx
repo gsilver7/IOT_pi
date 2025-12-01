@@ -10,6 +10,20 @@ export interface AduDataDto {
   co2: string;
   light: string;
 }
+export interface MacMatchDto {
+  matched: boolean;
+  macs: string[];
+  devices: Array<{
+    mac: string;
+    rssi: number;
+    name: string;
+  }>;
+  users: Array<{
+    id: number;
+    name: string;
+  }>;
+  timestamp: string;
+}
 
 interface ControlMessage {
   light: number;
@@ -75,12 +89,24 @@ export const Socketmain = () => {
       setLight(payload.light);
     };
 
+    const handlemacData = (data:MacMatchDto) => {
+    console.log('✅ 등록된 블루투스 장치 감지!', data);
+    
+    const userNames = data.users.map(u => u.name).join(', ');
+    const macAddresses = data.macs.join(', ');
+    
+    alert(`등록된 사용자의 블루투스 장치가 감지되었습니다!\n사용자: ${userNames}\nMAC: ${macAddresses}`);
+    
+    // 원하는 추가 동작 수행
+    // 예: 자동으로 얼굴 인식 시작, UI 업데이트 등
+  }
     // 이벤트 등록
     socket.on("connect", handleConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("connect_error", handleError);
     socket.on("server-time", handleTime);
     socket.on("adu-data", handleData);
+    socket.on("mac", handlemacData);
 
     // 클린업 (언마운트 시 리스너 제거)
     return () => {
@@ -89,6 +115,7 @@ export const Socketmain = () => {
       socket.off("connect_error", handleError);
       socket.off("server-time", handleTime);
       socket.off("adu-data", handleData);
+      socket.off("mac", handlemacData);
     };
   }, [socket]);
 
