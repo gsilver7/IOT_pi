@@ -13,22 +13,14 @@ interface GlobalStateContextType {
 const GlobalStateContext = createContext<GlobalStateContextType | undefined>(undefined);
 
 export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { light } = useContext(OnoffContext);
   const [modetype, setModetype] = useState<string>("sudong");
   const timerRef = useRef<number | null>(null);
   const modetypeRef = useRef(modetype); // 👈 최신 modetype을 추적
-  const lightRef = useRef<number>(0); // 👈 최신 modetype을 추적
 
   useEffect(() => {
     modetypeRef.current = modetype;
   }, [modetype]);
 
-  useEffect(() => {
-    const numericLight = Number(light);
-    lightRef.current = isNaN(numericLight) ? 0 : numericLight;
-    console.log(`[light Context Update] light: ${light}, lightRef.current: ${lightRef.current}`);
-    
-  }, [light]);
 
   const triggerStateB = useCallback((matched:boolean, light:string) => {
     
