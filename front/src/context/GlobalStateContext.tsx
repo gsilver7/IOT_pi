@@ -1,8 +1,5 @@
 // GlobalStateContext.tsx
 import React, { createContext, useContext, useState, useEffect, useRef,useCallback } from 'react';
-import { OnoffContext } from "./OnoffContext";
-
-
 
 interface GlobalStateContextType {
   modetype: string;
