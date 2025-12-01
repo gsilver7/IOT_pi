@@ -9,6 +9,7 @@ const { spawn } = require('child_process');
 const { initUnifiedBluetoothScanner, 
   stopUnifiedBluetoothScanner  } = require('./ble-scanner'); // 이 줄 확인
 
+  
 const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
 const BAUD_RATE = 9600;
 const PYTHON_VENV_PATH = '/home/rlaaudwns/web/backend/python/bin/python3'; // 가상환경 경로

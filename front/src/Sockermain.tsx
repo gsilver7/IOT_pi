@@ -87,14 +87,7 @@ export const Socketmain = () => {
 
   const handlemacData = (data:MacMatchDto) => {
     if (data.matched==true) {
-      console.log('✅ 등록된 블루투스 장치 감지!', data);
-     
-      const macAddresses = data.macs.join(', ');
-      
-      console.log(`등록된 사용자의 블루투스 장치가 감지되었습니다!\n사용자: MAC: ${macAddresses}`);
-      
-      
-    }
+      console.log('✅ 등록된 블루투스 장치 감지!', data);}
 
     else {console.log('등록된 블루투스 장치 미감지!', data);}
 
