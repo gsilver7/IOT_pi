@@ -6,10 +6,11 @@ const fs = require('fs');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 const { spawn } = require('child_process');
+
 const { initUnifiedBluetoothScanner, 
   stopUnifiedBluetoothScanner  } = require('./ble-scanner'); // 이 줄 확인
 
-  
+
 const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
 const BAUD_RATE = 9600;
 const PYTHON_VENV_PATH = '/home/rlaaudwns/web/backend/python/bin/python3'; // 가상환경 경로
@@ -363,7 +364,6 @@ let latestAduData = { temp: 0, humi: 0, co2: 0, light: 0};
 
 // 아두이노로부터 데이터 수신
 parser.on('data', (data) => {
-  console.log('📥 아두이노 데이터:', data);
     
   try {
     // JSON 형식으로 받는 경우
