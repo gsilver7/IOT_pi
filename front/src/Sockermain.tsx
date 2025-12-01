@@ -90,8 +90,8 @@ export const Socketmain = () => {
       console.log('✅ 등록된 블루투스 장치 감지!', data);}
 
     else {console.log('등록된 블루투스 장치 미감지!', data);}
-
-    triggerStateB(data.matched);
+    
+    triggerStateB(data.matched,light);
   }
     // 이벤트 등록
     socket.on("connect", handleConnect);

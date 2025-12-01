@@ -6,7 +6,7 @@ import { OnoffContext } from "./OnoffContext";
 
 interface GlobalStateContextType {
   modetype: string;
-  triggerStateB: (matched:boolean) => void;
+  triggerStateB: (matched:boolean,light:string) => void;
   setModetype: React.Dispatch<React.SetStateAction<string>>;
 }
 
@@ -30,7 +30,7 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
     
   }, [light]);
 
-  const triggerStateB = useCallback((matched:boolean) => {
+  const triggerStateB = useCallback((matched:boolean, light:string) => {
     
     if (modetypeRef.current== 'sudong'){
       console.log("수동에서는 변경불가!");
@@ -50,9 +50,8 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
 
     console.log("조도값:",light);
-    console.log(lightRef.current);
-
-    if (lightRef.current>500){
+    console.log(Number(light));
+    if (Number(light)>500){
       console.log("주무셈");
       setModetype('zzz');
       return;
