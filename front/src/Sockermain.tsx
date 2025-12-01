@@ -22,7 +22,7 @@ export interface MacMatchDto {
 interface ControlMessage {
   glight: number;
   hlight: number;
-  w: number;
+  win: number;
   fan: number;
   hum: number;
   hit: number;
@@ -65,7 +65,7 @@ export const Socketmain = () => {
     const controlMessage: ControlMessage = {
       hlight: hlight,
       glight: glight,
-      w: win,
+      win: win,
       fan: fan,
       hit:hit,
       hum:hum,
@@ -77,7 +77,7 @@ export const Socketmain = () => {
       console.log("📤 제어 상태 전송:", controlMessage);
       socket.emit("control", controlMessage);
     }
-  }, [hlight, win, fan, modetype, socket]);
+  }, [hlight, glight, win, fan,door,hum,hit, modetype, socket]);
 
   // 2. 소켓 이벤트 리스너 등록 (Receive)
   useEffect(() => {
