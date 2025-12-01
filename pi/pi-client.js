@@ -7,12 +7,10 @@ const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 const { spawn } = require('child_process');
 
-// const { initUnifiedBluetoothScanner, 
-//   stopUnifiedBluetoothScanner  } = require('./ble-scanner'); // 이 줄 확인
+const { initUnifiedBluetoothScanner, 
+  stopUnifiedBluetoothScanner  } = require('./ble-scanner'); // 이 줄 확인
 
 
-
-const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
 
 const PYTHON_VENV_PATH = '/home/rlaaudwns/web/backend/python/bin/python3'; // 가상환경 경로
 const PYTHON_SCRIPT_PATH = '/home/rlaaudwns/web/pi/face_make.py'; // 실행할 스크립트 경로
@@ -39,14 +37,14 @@ const socket = io(`${AWS_SERVER}`, {
 socket.on('connect', () => {
   console.log('✅ AWS 서버 연결 성공:', socket.id);
   startWebcamStreaming();
-    // initUnifiedBluetoothScanner(socket);
+    initUnifiedBluetoothScanner(socket);
 });
 
 // 연결 끊김
 socket.on('disconnect', (reason) => {
   console.warn('❌ AWS 서버 연결 끊김:', reason);
   stopWebcamStreaming();
-  // stopUnifiedBluetoothScanner();
+  stopUnifiedBluetoothScanner();
 });
 
 // 연결 에러
@@ -63,7 +61,8 @@ socket.on('command', (data) => {
   }
   
   if (data.command) {
-    port.write(data.command + '\n');
+    portA.write(data.command + '\n');
+    portB.write(data.command + '\n');
   }
 });
 
@@ -351,7 +350,7 @@ socket.on('compare', (data) => {
 
 // 시리얼 포트 연결 성공
 portA.on('open', () => {
-  console.log('✅ 아두이노 시리얼 포트 연결:', SERIAL_PORT);
+  console.log('✅ 아두이노 시리얼 포트 연결:', '/dev/ttyACM0');
 });
 
 // 시리얼 포트 에러
@@ -415,8 +414,6 @@ setInterval(() => {
 
 // 🆕 프론트엔드로부터 제어 명령 수신
 socket.on('control', (data) => {
-  console.log('📥 제어 명령 수신:', data);
-  
   // JSON을 문자열로 변환하여 아두이노로 전송
   const jsonString = JSON.stringify(data);
   portA.write(jsonString + '\n');
@@ -505,7 +502,7 @@ function stopWebcamStreaming() {
 process.on('SIGINT', () => {
   console.log('\n종료 중...');
   stopWebcamStreaming();
-  // stopUnifiedBluetoothScanner();
+  stopUnifiedBluetoothScanner();
   portA.close();
   portB.close();
   socket.disconnect();

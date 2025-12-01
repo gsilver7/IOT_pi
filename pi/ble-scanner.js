@@ -59,7 +59,7 @@ const scanClassicBluetooth = () => {
   const executeClassicScan = () => {
     console.log('🔍 hcitool scan 실행 중...');
     
-    exec('timeout 20 sudo hcitool scan', { timeout: 25000 }, (error, stdout, stderr) => {
+    exec('timeout 15 sudo hcitool scan', { timeout: 20000 }, (error, stdout, stderr) => {
       if (error && error.killed) {
         console.log('⏱️ 타임아웃으로 종료됨 (정상)');
       }
@@ -92,7 +92,7 @@ const scanClassicBluetooth = () => {
   executeClassicScan();
   
   // 30초마다 반복 실행
-  classicScanInterval = setInterval(executeClassicScan, 30000);
+  classicScanInterval = setInterval(executeClassicScan, 15000);
 };
 
 // =========================================================
@@ -139,11 +139,11 @@ const initUnifiedBluetoothScanner = (socket) => {
   // Classic 블루투스 스캐너 시작
   scanClassicBluetooth();
 
-  // 5초마다 모든 장치를 서버로 전송
+  // 3초마다 모든 장치를 서버로 전송
   if (scanInterval) clearInterval(scanInterval);
   scanInterval = setInterval(() => {
     sendAllDevicesToServer();
-  }, 5000);
+  }, 3000);
 };
 
 // =========================================================
