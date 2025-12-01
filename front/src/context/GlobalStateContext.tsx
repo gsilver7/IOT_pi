@@ -1,5 +1,7 @@
 // GlobalStateContext.tsx
 import React, { createContext, useContext, useState, useEffect, useRef,useCallback } from 'react';
+import { OnoffContext } from "./OnoffContext";
+
 
 
 interface GlobalStateContextType {
@@ -11,30 +13,51 @@ interface GlobalStateContextType {
 const GlobalStateContext = createContext<GlobalStateContextType | undefined>(undefined);
 
 export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { light } = useContext(OnoffContext);
   const [modetype, setModetype] = useState<string>("sudong");
   const timerRef = useRef<number | null>(null);
   const modetypeRef = useRef(modetype); // 👈 최신 modetype을 추적
+  const lightRef = useRef(light); // 👈 최신 modetype을 추적
 
   useEffect(() => {
     modetypeRef.current = modetype;
   }, [modetype]);
+
+  useEffect(() => {
+    lightRef.current = light;
+  }, [light]);
+
   const triggerStateB = useCallback(() => {
+    
+    
     if (modetypeRef.current== 'sudong'){
       console.log("수동에서는 변경불가!");
       return;
     }
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (Number(lightRef.current)<500){
+      console.log("주무셈");
+      setModetype('zzz');
+      return;
+    }
+
+    console.log("아침입니다!");
     console.log('🔄 상태를 in으로 변경');
     setModetype('in');
     
     // 기존 타이머 클리어
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
+    
     
     // 1분 후 자동으로 A로 복귀
     timerRef.current = window.setTimeout(() => {
       console.log('⏰ 1분 경과 - 상태를 out로 복귀');
       setModetype('out');
+      timerRef.current = null; // 타이머 완료 후 정리
     }, 60000); // 60초
   },[]);
 
