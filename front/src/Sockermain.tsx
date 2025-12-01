@@ -1,5 +1,5 @@
 // hooks/useSmartHomeSocket.ts
-import { useEffect, useContext } from "react";
+import { useEffect, useContext,useRef } from "react";
 import useSocket from "./hooks/useSocket";
 import { OnoffContext } from "./context/OnoffContext";
 import { useGlobalState } from "./context/GlobalStateContext";
@@ -42,6 +42,13 @@ export const Socketmain = () => {
     setLight,
     light
   } = useContext(OnoffContext);
+
+  const lightRef = useRef(light);
+
+  // 3. light 값이 바뀔 때마다 Ref에 최신 값 동기화
+  useEffect(() => {
+    lightRef.current = light;
+  }, [light]);
 
   // 센서 데이터 상태 관리
 
@@ -92,7 +99,7 @@ export const Socketmain = () => {
 
     else {console.log('등록된 블루투스 장치 미감지!', data);}
     
-    triggerStateB(data.matched,light);
+    triggerStateB(data.matched,lightRef.current);
   }
     // 이벤트 등록
     socket.on("connect", handleConnect);
@@ -111,7 +118,7 @@ export const Socketmain = () => {
       socket.off("adu-data", handleData);
       socket.off("mac", handlemacData);
     };
-  }, [socket,light]);
+  }, [socket,triggerStateB]);
 
   // UI에서 필요한 데이터만 반환
   return null;
