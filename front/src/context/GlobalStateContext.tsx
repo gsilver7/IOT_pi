@@ -47,7 +47,7 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return;
     }
 
-
+    console.log("조도값:",light);
     console.log(lightRef.current);
 
     if (lightRef.current>500){
