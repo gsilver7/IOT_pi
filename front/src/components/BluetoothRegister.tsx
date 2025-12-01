@@ -45,7 +45,7 @@ const BluetoothRegister = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        "http://localhost:3000/users/bluetooth",
+        "https://kmj.shscript.com/api/users/bluetooth",
         { bluetooth: bluetooth }, // body
         { headers: { Authorization: `Bearer ${token}` } }
       );
