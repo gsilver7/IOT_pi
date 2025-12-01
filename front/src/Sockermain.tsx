@@ -39,7 +39,8 @@ export const Socketmain = () => {
     setTemp,
     setHumi,
     setCo2,
-    setLight
+    setLight,
+    light
   } = useContext(OnoffContext);
 
   // 센서 데이터 상태 관리
