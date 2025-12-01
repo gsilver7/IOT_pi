@@ -6,7 +6,7 @@ import { OnoffContext } from "./OnoffContext";
 
 interface GlobalStateContextType {
   modetype: string;
-  triggerStateB: () => void;
+  triggerStateB: (matched:boolean) => void;
   setModetype: React.Dispatch<React.SetStateAction<string>>;
 }
 
