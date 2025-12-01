@@ -18,11 +18,11 @@ interface ToggleButtonProps {
 }
 
 const ModeButton = ({ ttt }: ToggleButtonProps) => {
-  const { modetype, setModeType } = useGlobalState();
+  const { modetype, setModetype } = useGlobalState();
 
   const h=(ttt === "sudong")?"수동":(ttt === "in")?"재실":(ttt === "zzz")?"취침":"외출"
   return (
-    <Sbutton onClick={() => setModeType(ttt)} mode={modetype} ttt={ttt}>
+    <Sbutton onClick={() => setModetype(ttt)} mode={modetype} ttt={ttt}>
       {h}
     </Sbutton>
   );

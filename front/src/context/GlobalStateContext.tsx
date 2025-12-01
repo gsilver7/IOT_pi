@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 interface GlobalStateContextType {
   modetype: string;
   triggerStateB: () => void;
-  setModeType: (mode:string)=> void;
+  setModetype: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const GlobalStateContext = createContext<GlobalStateContextType | undefined>(undefined);
@@ -14,16 +14,9 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [modetype, setModetype] = useState<string>("sudong");
   const timerRef = useRef<number | null>(null);
 
-  const setModeType = (mode: string) => {
-    console.log('🔧 모드 타입 변경:', mode);
-    setModetype(mode);
-  };
 
   const triggerStateB = () => {
-    if (modetype === 'sudong') {
-      console.log('⚠️ sudong 모드에서는 자동 감지 비활성화');
-      return; // 함수 종료
-    }
+
     console.log('🔄 상태를 in으로 변경');
     setModetype('in');
     
@@ -49,7 +42,7 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, []);
 
   return (
-    <GlobalStateContext.Provider value={{ modetype, setModeType, triggerStateB }}>
+    <GlobalStateContext.Provider value={{ modetype, setModetype, triggerStateB }}>
       {children}
     </GlobalStateContext.Provider>
   );

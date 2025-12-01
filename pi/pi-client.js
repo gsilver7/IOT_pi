@@ -6,9 +6,9 @@ const fs = require('fs');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 const { spawn } = require('child_process');
+
 const { initUnifiedBluetoothScanner, 
   stopUnifiedBluetoothScanner  } = require('./ble-scanner'); // 이 줄 확인
-
 
 const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
 const BAUD_RATE = 9600;
