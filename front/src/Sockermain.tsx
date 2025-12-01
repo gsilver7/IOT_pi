@@ -43,6 +43,7 @@ export const Socketmain = () => {
     hum,
     fan,
     door,
+    setDoor,
     setServerTime,
     setTemp,
     setHumi,
@@ -95,6 +96,11 @@ export const Socketmain = () => {
       setServerTime(data.timestamp);
     };
 
+    const handleDoor = () => {
+      console.log("문을 열어라!");
+      setDoor(1);
+    }
+
     const handleData = (payload: AduDataDto) => {
       setTemp(payload.temp);
 
@@ -120,7 +126,8 @@ export const Socketmain = () => {
     socket.on("server-time", handleTime);
     socket.on("adu-data", handleData);
     socket.on("mac", handlemacData);
-
+    socket.on("door-status", handleDoor);
+    
     // 클린업 (언마운트 시 리스너 제거)
     return () => {
       socket.off("connect", handleConnect);
@@ -129,6 +136,7 @@ export const Socketmain = () => {
       socket.off("server-time", handleTime);
       socket.off("adu-data", handleData);
       socket.off("mac", handlemacData);
+      socket.off("door-status", handleDoor);
     };
   }, [socket,triggerStateB]);
 

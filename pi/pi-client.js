@@ -7,22 +7,22 @@ const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 const { spawn } = require('child_process');
 
-const { initUnifiedBluetoothScanner, 
-  stopUnifiedBluetoothScanner  } = require('./ble-scanner'); // 이 줄 확인
+// const { initUnifiedBluetoothScanner, 
+//   stopUnifiedBluetoothScanner  } = require('./ble-scanner'); // 이 줄 확인
+
 
 
 const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
-const BAUD_RATE = 9600;
+
 const PYTHON_VENV_PATH = '/home/rlaaudwns/web/backend/python/bin/python3'; // 가상환경 경로
 const PYTHON_SCRIPT_PATH = '/home/rlaaudwns/web/pi/face_make.py'; // 실행할 스크립트 경로
 
 // 시리얼 포트 초기화
-const port = new SerialPort({
-  path: SERIAL_PORT,
-  baudRate: BAUD_RATE,
-}); 
+const portA = new SerialPort({ path: '/dev/ttyACM0', baudRate: 9600 }); 
+const portB = new SerialPort({ path: '/dev/ttyACM1', baudRate: 9600 });
 
-const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
+const parserA = portA.pipe(new ReadlineParser({ delimiter: '\n' }));
+
 
 // AWS WAS 주소
 const AWS_SERVER = 'https://kmj.shscript.com';
@@ -39,14 +39,14 @@ const socket = io(`${AWS_SERVER}`, {
 socket.on('connect', () => {
   console.log('✅ AWS 서버 연결 성공:', socket.id);
   startWebcamStreaming();
-    initUnifiedBluetoothScanner(socket);
+    // initUnifiedBluetoothScanner(socket);
 });
 
 // 연결 끊김
 socket.on('disconnect', (reason) => {
   console.warn('❌ AWS 서버 연결 끊김:', reason);
   stopWebcamStreaming();
-  stopUnifiedBluetoothScanner();
+  // stopUnifiedBluetoothScanner();
 });
 
 // 연결 에러
@@ -350,12 +350,12 @@ socket.on('compare', (data) => {
 });
 
 // 시리얼 포트 연결 성공
-port.on('open', () => {
+portA.on('open', () => {
   console.log('✅ 아두이노 시리얼 포트 연결:', SERIAL_PORT);
 });
 
 // 시리얼 포트 에러
-port.on('error', (err) => {
+portA.on('error', (err) => {
   console.error('🔴 시리얼 포트 에러:', err.message);
 });
 
@@ -363,7 +363,7 @@ port.on('error', (err) => {
 let latestAduData = { temp: 0, humi: 0, co2: 0, light: 0};
 
 // 아두이노로부터 데이터 수신
-parser.on('data', (data) => {
+parserA.on('data', (data) => {
     
   try {
     // JSON 형식으로 받는 경우
@@ -419,7 +419,8 @@ socket.on('control', (data) => {
   
   // JSON을 문자열로 변환하여 아두이노로 전송
   const jsonString = JSON.stringify(data);
-  port.write(jsonString + '\n');
+  portA.write(jsonString + '\n');
+  portB.write(jsonString + '\n');
   
   console.log('📤 아두이노로 전송:', jsonString);
   console.log(data);
@@ -504,8 +505,9 @@ function stopWebcamStreaming() {
 process.on('SIGINT', () => {
   console.log('\n종료 중...');
   stopWebcamStreaming();
-  stopUnifiedBluetoothScanner();
-  port.close();
+  // stopUnifiedBluetoothScanner();
+  portA.close();
+  portB.close();
   socket.disconnect();
   process.exit();
 });
