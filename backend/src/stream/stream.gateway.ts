@@ -78,8 +78,6 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
           deviceId: data.deviceId,
         });
       }
-
-      console.log(`📹 Frame ${this.frameCount} broadcasted to ${this.connectedClients.size} clients`);
       
       return { success: true, frameNumber: this.frameCount };
     } catch (error) {

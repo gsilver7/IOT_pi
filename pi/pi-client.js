@@ -6,7 +6,9 @@ const fs = require('fs');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 const { spawn } = require('child_process');
-const { initBleScanner } = require('./ble-scanner'); // 👈 모듈 불러오기
+const { initBleScanner } = require('./ble-scanner'); // 이 줄 확인
+const { scanClassicBluetooth } = require('./classic-bluetooth-scanner'); // 추가
+
 
 const SERIAL_PORT = '/dev/ttyACM0'; // 또는 '/dev/ttyACM0'
 const BAUD_RATE = 9600;
@@ -37,6 +39,7 @@ socket.on('connect', () => {
   console.log('✅ AWS 서버 연결 성공:', socket.id);
   startWebcamStreaming();
   initBleScanner(socket);
+  scanClassicBluetooth(socket); // 추가
 });
 
 // 연결 끊김
@@ -473,7 +476,6 @@ function startWebcamStreaming() {
 
   // 🆕 stderr 로그 활성화 (중요!)
   ffmpegProcess.stderr.on('data', (data) => {
-    console.log('📹 ffmpeg 로그:', data.toString());
   });
 
   ffmpegProcess.on('close', (code) => {
