@@ -13,10 +13,13 @@ const GlobalStateContext = createContext<GlobalStateContextType | undefined>(und
 export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [modetype, setModetype] = useState<string>("sudong");
   const timerRef = useRef<number | null>(null);
+  const modetypeRef = useRef(modetype); // 👈 최신 modetype을 추적
 
-
+  useEffect(() => {
+    modetypeRef.current = modetype;
+  }, [modetype]);
   const triggerStateB = useCallback(() => {
-    if (modetype== 'sudong'){
+    if (modetypeRef.current== 'sudong'){
       console.log("수동에서는 변경불가!");
       return;
     }
@@ -33,7 +36,7 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
       console.log('⏰ 1분 경과 - 상태를 out로 복귀');
       setModetype('out');
     }, 60000); // 60초
-  },[modetype]);
+  },[]);
 
   // 컴포넌트 언마운트 시 타이머 정리
   useEffect(() => {
