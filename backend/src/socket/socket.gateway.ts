@@ -25,9 +25,13 @@ interface AduDataDto {
 }
 
 interface ControlMessage {
-  light: number;
+  glight: number;
+  hlight: number;
   w: number;
   fan: number;
+  hum: number;
+  hit: number;
+  door: number;
   mode: string;
 }
 
@@ -71,7 +75,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): void {
     console.log(`[${client.id}] 센서 데이터 수신:`, payload);
     console.log(
-      `창문: ${payload.w}, 조명: ${payload.light}, 팬: ${payload.fan}, 모드: ${payload.mode}`
+      `창문: ${payload.w}, 조명: ${payload.hlight}, 팬: ${payload.fan}, 모드: ${payload.mode}`
     );
     client.broadcast.emit('control', payload);
   }

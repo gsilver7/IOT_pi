@@ -20,9 +20,13 @@ export interface MacMatchDto {
 }
 
 interface ControlMessage {
-  light: number;
+  glight: number;
+  hlight: number;
   w: number;
   fan: number;
+  hum: number;
+  hit: number;
+  door: number;
   mode: string;
 }
 
@@ -33,8 +37,12 @@ export const Socketmain = () => {
   const socket = useSocket();
   const {
     hlight,
+    glight,
     win,
+    hit,
+    hum,
     fan,
+    door,
     setServerTime,
     setTemp,
     setHumi,
@@ -55,9 +63,13 @@ export const Socketmain = () => {
   // 1. 제어 상태(Context)가 바뀌면 소켓으로 전송 (Emit)
   useEffect(() => {
     const controlMessage: ControlMessage = {
-      light: hlight,
+      hlight: hlight,
+      glight: glight,
       w: win,
       fan: fan,
+      hit:hit,
+      hum:hum,
+      door:door,
       mode:modetype
     };
 
