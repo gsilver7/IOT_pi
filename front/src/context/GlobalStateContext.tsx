@@ -46,9 +46,8 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setModetype('out');
       return;
     }
-    const lightValue = parseInt(lightRef.current); // parseInt 사용
-    console.log(lightValue);
-    if (lightValue<500){
+
+    if (lightRef.current<500){
       console.log("주무셈");
       setModetype('zzz');
       return;
