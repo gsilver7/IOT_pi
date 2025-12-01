@@ -100,12 +100,8 @@ export const Socketmain = () => {
     
     console.log(`등록된 사용자의 블루투스 장치가 감지되었습니다!\n사용자: ${userNames}\nMAC: ${macAddresses}`);
 
-    if (modetype == 'sudong'){
-      console.log("수동 상태에서는 상태 변경 불가!");}
-    else if (modetype !== 'sudong'){
-      console.log("수동 상태가 아님!");
-      triggerStateB();
-    }
+    triggerStateB();
+    
   }
     // 이벤트 등록
     socket.on("connect", handleConnect);
