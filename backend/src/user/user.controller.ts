@@ -28,7 +28,14 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Patch('bluetooth')
   async updateBluetooth(@Request() req, @Body() body: { bluetooth: string }) {
-    return this.userService.updateBluetooth(req.user.userId, body.bluetooth);
+    console.log('📡 블루투스 업데이트 요청 수신');
+    console.log('👤 userId:', req.user.userId);
+    console.log('📱 bluetooth:', body.bluetooth);
+    
+    const result = await this.userService.updateBluetooth(req.user.userId, body.bluetooth);
+    
+    console.log('✅ 블루투스 업데이트 완료:', result);
+    return result;
   }
 
   @Get()
