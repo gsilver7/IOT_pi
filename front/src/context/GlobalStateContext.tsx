@@ -47,6 +47,8 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return;
     }
 
+
+    console.log(lightRef.current);
     if (lightRef.current<500){
       console.log("주무셈");
       setModetype('zzz');
