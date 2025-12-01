@@ -99,6 +99,10 @@ export const Socketmain = () => {
     const handleDoor = () => {
       console.log("문을 열어라!");
       setDoor(1);
+      setTimeout(() => {
+        console.log("🚪 문 열기 신호 초기화 (자동 복구)");
+        setDoor(0);
+      }, 500);
     }
 
     const handleData = (payload: AduDataDto) => {
