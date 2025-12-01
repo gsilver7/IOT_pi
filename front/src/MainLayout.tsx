@@ -105,14 +105,14 @@ const Mobabar = styled.div<{ $toggle: boolean }>`
   padding: 0;
   color: white;
   border: none;
-  height: 100%;
-  width: 13%;
+  height: 100vh;
+  
+  position: fixed;
   float: left;
   background: #1a202e;
   @media (min-width: 800px) {
     display: none;
   }
-  position: absolute;
   top: 0;
   left: 0;
   width: 30%;
@@ -165,7 +165,6 @@ const MainLayout = ({
   }, [now]); // now가 세팅되면 시작
   return (
     <Div>
-      {" "}
       {toggle && <Over onClick={() => setToggle(false)} />}
       <Sidebar>
         <Sidediv>Smart Home</Sidediv>
