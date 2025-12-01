@@ -17,14 +17,21 @@ export const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [modetype, setModetype] = useState<string>("sudong");
   const timerRef = useRef<number | null>(null);
   const modetypeRef = useRef(modetype); // 👈 최신 modetype을 추적
-  const lightRef = useRef(light); // 👈 최신 modetype을 추적
+  const lightRef = useRef(0); // 👈 최신 modetype을 추적
 
   useEffect(() => {
     modetypeRef.current = modetype;
   }, [modetype]);
 
   useEffect(() => {
-    lightRef.current = light;
+    const numericLight = Number(light);
+    
+    if (!isNaN(numericLight)) {
+      lightRef.current = numericLight;
+      console.log('📊 조도 업데이트:', numericLight);
+    } else {
+      console.warn('⚠️ 잘못된 조도 값:', light);
+    }
   }, [light]);
 
   const triggerStateB = useCallback((matched:boolean) => {
