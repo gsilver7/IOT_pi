@@ -52,12 +52,6 @@ const Light = () => {
         <WebcamStreamClient></WebcamStreamClient>
       </IndivT>   
       <Indiv>
-        <Sh2>방문객 정보</Sh2>
-        <Sp>이름:</Sp>
-        <Sp>시간:</Sp>
-
-      </Indiv>
-      <Indiv>
         <Sh2>도어락 제어</Sh2>
           <ToggleImg buttonimg={door ? '/toggle/Dooron.svg' : '/toggle/Dooroff.svg'} ttt={door}></ToggleImg>
         <ToggleButton onClick={() => setDoor((prev) => (prev === 0 ? 1 : 0))} ttt={door}></ToggleButton>
