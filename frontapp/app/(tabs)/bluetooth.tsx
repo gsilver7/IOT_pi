@@ -158,17 +158,30 @@ export default function BluetoothScreen() {
     }
   };
 
-  const sendBluetoothCommand = async (data: any) => {
+  const sendBluetoothCommand = async (data: string) => {
     if (!connectedDevice) {
       Alert.alert('오류', '연결된 기기가 없습니다');
       return;
     }
     
     try {
-      await connectedDevice.write(data);
-      console.log('블루투스 전송:', data);
+      console.log('📤 원본 데이터:', data);
+      
+      const base64Data = btoa(data);
+      console.log('📤 Base64 인코딩:', base64Data);
+      
+      await connectedDevice.write(base64Data);
+      
+      console.log('✅ 블루투스 전송 완료');
     } catch (error) {
-      console.error('전송 오류:', error);
+      // ✅ Error 타입으로 체크
+      if (error instanceof Error) {
+        console.error('❌ 전송 오류:', error.message);
+        Alert.alert('전송 실패', error.message);
+      } else {
+        console.error('❌ 알 수 없는 오류:', error);
+        Alert.alert('전송 실패', '알 수 없는 오류가 발생했습니다');
+      }
     }
   };
 
