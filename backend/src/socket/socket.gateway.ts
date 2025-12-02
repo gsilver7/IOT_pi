@@ -11,7 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Interval } from '@nestjs/schedule';
 import { OnEvent } from '@nestjs/event-emitter';
-import { User } from '../user/user.entity'; // User 엔티티 import 경로에 맞게 수정
+import { User } from '../user/user.entity';
 import { Repository, Not, IsNull } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -35,6 +35,26 @@ interface ControlMessage {
   mode: string;
 }
 
+// ✅ 블루투스 DTO 추가
+interface BluetoothDto {
+  device: string;
+  command: string;
+  key: string;
+  value: string;
+}
+
+// ✅ 제어 상태 DTO 추가
+interface ControlStateDto {
+  hlight: number;
+  glight: number;
+  win: number;
+  fan: number;
+  hit: number;
+  hum: number;
+  door: number;
+  mode: string;
+}
+
 @WebSocketGateway({
   cors: {
     origin: 'https://kmj.shscript.com',
@@ -53,39 +73,155 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly userRepository: Repository<User>,
   ) {}
 
-
   private readonly logger = new Logger(EventsGateway.name);
 
-  // 클라이언트 연결 시 실행
+  // ✅ 전체 제어 상태 저장
+  private controlState: ControlStateDto = {
+    hlight: 0,
+    glight: 0,
+    win: 0,
+    fan: 0,
+    hit: 0,
+    hum: 0,
+    door: 0,
+    mode: 'sudong',
+  };
+
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
+    // ✅ 새 클라이언트에게 현재 상태 전송
+    client.emit('control-state', this.controlState);
   }
 
-  // 클라이언트 연결 해제 시 실행
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  // 'message' 이벤트를 받으면 실행
+  // ==================== 블루투스 명령 처리 (새로 추가) ====================
+
+  @SubscribeMessage('bluetooth')
+  handleBluetooth(
+    @MessageBody() data: BluetoothDto,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    this.logger.log(`📱 [${client.id}] bluetooth 수신:`, data);
+
+    const { key, value } = data;
+    const trimmedValue = value?.trim();
+
+    // ✅ 상태 업데이트
+    const updated = this.updateControlState(key, trimmedValue);
+
+    if (updated) {
+      this.logger.log(`✅ 상태 업데이트:`, this.controlState);
+
+      // ✅ 전체 상태를 모든 클라이언트에게 브로드캐스트
+      this.server.emit('control-state', this.controlState);
+    } else {
+      this.logger.warn(
+        `⚠️ 상태 업데이트 실패 - key: ${key}, value: ${trimmedValue}`,
+      );
+    }
+  }
+
+  // ✅ 상태 업데이트 로직
+  private updateControlState(key: string, value: string): boolean {
+    switch (key) {
+      case 'MODE':
+        return this.updateMode(value);
+      case 'WIN':
+        return this.updateOnOff('win', value);
+      case 'FAN':
+        return this.updateOnOff('fan', value);
+      case 'HUMID':
+        return this.updateOnOff('hum', value);
+      case 'HEAT':
+        return this.updateOnOff('hit', value);
+      case 'LIGHT':
+        return this.updateOnOff('glight', value);
+      case 'DOOR':
+        return this.updateOnOff('door', value);
+      default:
+        this.logger.warn(`⚠️ 알 수 없는 key: ${key}`);
+        return false;
+    }
+  }
+
+  private updateMode(value: string): boolean {
+    const modeMap: { [key: string]: string } = {
+      '0': 'sudong',
+      '1': 'in',
+      '2': 'zzz',
+      '3': 'out',
+    };
+
+    const mode = modeMap[value];
+    if (mode) {
+      this.controlState.mode = mode;
+      return true;
+    }
+
+    this.logger.warn(`⚠️ 잘못된 MODE 값: ${value}`);
+    return false;
+  }
+
+  private updateOnOff(
+    field: keyof ControlStateDto,
+    value: string,
+  ): boolean {
+    if (value === '0') {
+      (this.controlState as any)[field] = 0;
+      return true;
+    } else if (value === '1') {
+      (this.controlState as any)[field] = 1;
+      return true;
+    }
+
+    this.logger.warn(`⚠️ 잘못된 ${field} 값: ${value}`);
+    return false;
+  }
+
+  // ✅ 현재 상태 조회
+  @SubscribeMessage('get-state')
+  handleGetState(@ConnectedSocket() client: Socket): ControlStateDto {
+    this.logger.log(`📊 [${client.id}] get-state 요청`);
+    return this.controlState;
+  }
+
+  // ==================== 기존 코드 ====================
+
   @SubscribeMessage('control')
-  // @MessageBody()와 @ConnectedSocket() 데코레이터를 추가합니다.
   handleMessage(
     @MessageBody() payload: ControlMessage,
     @ConnectedSocket() client: Socket,
   ): void {
     console.log(`[${client.id}] 센서 데이터 수신:`, payload);
     console.log(
-      `창문: ${payload.w}, 조명: ${payload.hlight}, 팬: ${payload.fan}, 모드: ${payload.mode}`
+      `창문: ${payload.w}, 조명: ${payload.hlight}, 팬: ${payload.fan}, 모드: ${payload.mode}`,
     );
+
+    // ✅ 프론트에서 받은 제어 상태로 전체 상태 업데이트
+    if (payload.mode) this.controlState.mode = payload.mode;
+    if (payload.hlight !== undefined) this.controlState.hlight = payload.hlight;
+    if (payload.glight !== undefined) this.controlState.glight = payload.glight;
+    if (payload.w !== undefined) this.controlState.win = payload.w;
+    if (payload.fan !== undefined) this.controlState.fan = payload.fan;
+    if (payload.hum !== undefined) this.controlState.hum = payload.hum;
+    if (payload.hit !== undefined) this.controlState.hit = payload.hit;
+    if (payload.door !== undefined) this.controlState.door = payload.door;
+
+    this.logger.log(`✅ control로 상태 업데이트:`, this.controlState);
+
     client.broadcast.emit('control', payload);
+    // ✅ 업데이트된 전체 상태도 브로드캐스트
+    this.server.emit('control-state', this.controlState);
   }
 
-  @SubscribeMessage('adu-data') // 클라이언트가 보낼 이벤트 이름과 일치해야 함
+  @SubscribeMessage('adu-data')
   handleAdu(
-    @MessageBody() payload: AduDataDto, // 👈 string 대신 인터페이스 사용!
+    @MessageBody() payload: AduDataDto,
     @ConnectedSocket() client: Socket,
   ): void {
-    // 2. 이제 payload.temp 처럼 점(.) 찍어서 데이터에 접근 가능합니다.
     console.log(`[${client.id}] 센서 데이터 수신:`, payload);
     console.log(
       `온도: ${payload.temp}, 습도: ${payload.humi}, co2: ${payload.co2}, 조도: ${payload.light}`,
@@ -96,7 +232,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @OnEvent('tempdata')
   handleSerialData(payload: { type: string; value: string }) {
     console.log(`[SocketGateway] Broadcasting serial data: ${payload.value}`);
-
     this.server.emit('tempdata', payload);
   }
 
@@ -108,6 +243,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`[${client.id}] Python 실행 요청:`, payload);
     client.broadcast.emit('python', payload);
   }
+
   @SubscribeMessage('bluetooth-scan')
   async handleBluetoothScan(
     @MessageBody() payload: any,
@@ -115,18 +251,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     console.log(`[${client.id}] 블루투스 스캔 데이터 수신:`, payload);
 
-    // payload 구조:
-    // {
-    //   deviceId: 'pi-001',
-    //   devices: [
-    //     { mac: "AA:BB:CC:DD:EE:FF", rssi: -80, name: "Mi Band" },
-    //   ]
-    // }
-
     try {
-      // 1. 스캔된 MAC 주소 추출
-      const scannedMacs = payload.devices?.map(device => device.mac) || [];
-      
+      const scannedMacs = payload.devices?.map((device) => device.mac) || [];
+
       if (scannedMacs.length === 0) {
         console.log('스캔된 블루투스 장치가 없습니다.');
         return;
@@ -134,57 +261,55 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       console.log('스캔된 MAC 주소들:', scannedMacs);
 
-      // 2. 데이터베이스에서 모든 사용자의 블루투스 MAC 주소 조회
       const users = await this.userRepository.find({
         where: {
-          bluetooth: Not(IsNull()), // bluetooth 칼럼이 null이 아닌 것만
+          bluetooth: Not(IsNull()),
         },
-        select: ['id', 'bluetooth'], // 필요한 칼럼만 조회
+        select: ['id', 'bluetooth'],
       });
 
-      // 3. DB의 MAC 주소들 추출 (중복 제거)
       const dbMacs = users
-        .map(user => user.bluetooth)
-        .filter(mac => mac && mac.trim() !== '');
+        .map((user) => user.bluetooth)
+        .filter((mac) => mac && mac.trim() !== '');
 
       console.log('DB에 저장된 MAC 주소들:', dbMacs);
 
-      // 4. 겹치는 MAC 주소 찾기
-      const matchedMacs = scannedMacs.filter(scannedMac => 
-        dbMacs.some(dbMac => 
-          dbMac.toUpperCase() === scannedMac.toUpperCase()
-        )
+      const matchedMacs = scannedMacs.filter((scannedMac) =>
+        dbMacs.some(
+          (dbMac) => dbMac.toUpperCase() === scannedMac.toUpperCase(),
+        ),
       );
 
-      // 5. 겹치는 MAC 주소가 있으면 프론트로 전송
       if (matchedMacs.length > 0) {
         console.log('✅ 일치하는 MAC 주소 발견:', matchedMacs);
-        
-        // 일치하는 MAC 주소와 해당 장치 정보를 함께 전송
-        const matchedDevices = payload.devices.filter(device =>
-          matchedMacs.some(mac => 
-            mac.toUpperCase() === device.mac.toUpperCase()
-          )
+
+        const matchedDevices = payload.devices.filter((device) =>
+          matchedMacs.some(
+            (mac) => mac.toUpperCase() === device.mac.toUpperCase(),
+          ),
         );
 
-        // 프론트엔드로 소켓 전송
         this.server.emit('mac', {
           matched: true,
           macs: matchedMacs,
           devices: matchedDevices,
+          users: users.filter((user) =>
+            matchedMacs.some(
+              (mac) => mac.toUpperCase() === user.bluetooth.toUpperCase(),
+            ),
+          ),
           timestamp: new Date().toISOString(),
         });
-
-        // 또는 특정 클라이언트에만 전송하려면:
-        // client.emit('mac', { ... });
       } else {
         console.log('❌ 일치하는 MAC 주소 없음');
         this.server.emit('mac', {
           matched: false,
+          macs: [],
+          devices: [],
+          users: [],
           timestamp: new Date().toISOString(),
         });
       }
-
     } catch (error) {
       console.error('블루투스 스캔 처리 중 오류:', error);
       client.emit('error', {
@@ -193,6 +318,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
     }
   }
+
   @Interval(10000)
   handleInterval() {
     const message = {
