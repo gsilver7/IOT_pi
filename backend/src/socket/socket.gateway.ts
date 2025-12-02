@@ -232,7 +232,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     mode: this.controlState.mode,
     glight: this.controlState.glight,
   };
-    client.broadcast.emit('sensor-data', combinedData);
+    client.broadcast.emit('control', combinedData);
     
   }
 
