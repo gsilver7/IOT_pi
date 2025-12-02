@@ -4,21 +4,50 @@ import { io, Socket } from "socket.io-client";
 
 const SOCKET_URL = "https://kmj.shscript.com";
 
+// ✅ 싱글톤 패턴: 전역에서 하나의 소켓만 유지
+let socketInstance: Socket | null = null;
+
 const useSocket = () => {
-  // ✅ Socket 타입에 DefaultEventsMap이 기본으로 포함되므로 별도로 명시하지 않아도 됩니다.
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket: Socket = io(SOCKET_URL, {
-      transports: ["websocket"],
-      timeout: 10000,
-      autoConnect: true,
-      forceNew: true,
-    });
-    setSocket(newSocket);
+    // 이미 연결된 소켓이 있으면 재사용
+    if (socketInstance?.connected) {
+      console.log("♻️ 기존 소켓 재사용:", socketInstance.id);
+      setSocket(socketInstance);
+      return;
+    }
 
+    // 소켓이 없거나 연결이 끊어진 경우 새로 생성
+    if (!socketInstance) {
+      console.log("🔌 새 소켓 생성 중...");
+      socketInstance = io(SOCKET_URL, {
+        transports: ["websocket", "polling"], // polling -> websocket 순서로 시도
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 10,
+        timeout: 20000,
+      });
+
+      socketInstance.on("connect", () => {
+        console.log("✅ Socket 연결 성공! ID:", socketInstance?.id);
+      });
+
+      socketInstance.on("connect_error", (error) => {
+        console.error("❌ Socket 연결 실패:", error.message);
+      });
+
+      socketInstance.on("disconnect", (reason) => {
+        console.warn("⚠️ Socket 연결 끊김:", reason);
+      });
+    }
+
+    setSocket(socketInstance);
+
+    // ✅ cleanup: 컴포넌트 언마운트 시에도 소켓 유지
     return () => {
-      newSocket.disconnect();
+      console.log("🧹 useSocket cleanup (연결 유지)");
+      // disconnect 하지 않음 - 다른 컴포넌트에서 재사용
     };
   }, []);
 
