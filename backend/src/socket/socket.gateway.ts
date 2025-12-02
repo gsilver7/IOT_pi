@@ -116,7 +116,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.log(`✅ 상태 업데이트:`, this.controlState);
 
       // ✅ 전체 상태를 모든 클라이언트에게 브로드캐스트
-      this.server.emit('control-state', this.controlState);
+      this.server.emit('control', this.controlState);
+      client.broadcast.emit('control', this.controlState);
     } else {
       this.logger.warn(
         `⚠️ 상태 업데이트 실패 - key: ${key}, value: ${trimmedValue}`,

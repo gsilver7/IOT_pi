@@ -414,7 +414,7 @@ setInterval(() => {
 
 // 🆕 프론트엔드로부터 제어 명령 수신
 socket.on('control', (data) => {
-  // JSON을 문자열로 변환하여 아두이노로 전송
+  console.log('🎯🎯🎯 control 이벤트 받음!'); // ✅ 이게 안 찍히는지 확인
   const jsonString = JSON.stringify(data);
   portA.write(jsonString + '\n');
   portB.write(jsonString + '\n');
