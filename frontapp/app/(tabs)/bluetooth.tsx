@@ -4,13 +4,31 @@ import { useEffect, useState, useRef } from 'react';
 import { PermissionsAndroid, Platform } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 
+interface LogMessage {
+  id: string;
+  type: 'watch_to_app' | 'app_to_front' | 'front_to_app' | 'app_to_watch';
+  data: string;
+  timestamp: string;
+}
+
 export default function BluetoothScreen() {
   const [devices, setDevices] = useState<BluetoothDevice[]>([]);
   const [scanning, setScanning] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState<BluetoothDevice | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [logs, setLogs] = useState<LogMessage[]>([]);
   
   const socket = useRef<Socket | null>(null);
+
+  const addLog = (type: LogMessage['type'], data: string) => {
+    const newLog: LogMessage = {
+      id: Date.now().toString(),
+      type,
+      data,
+      timestamp: new Date().toLocaleTimeString()
+    };
+    setLogs(prev => [newLog, ...prev.slice(0, 49)]); // 최근 50개만 유지
+  };
 
   useEffect(() => {
     initBluetooth();
@@ -23,7 +41,6 @@ export default function BluetoothScreen() {
     };
   }, []);
 
-  // 블루투스 초기화
   const initBluetooth = async () => {
     if (Platform.OS === 'android') {
       await PermissionsAndroid.requestMultiple([
@@ -39,7 +56,6 @@ export default function BluetoothScreen() {
     }
   };
 
-  // Socket.IO 연결
   const connectSocket = () => {
     socket.current = io('https://kmj.shscript.com', {
       transports: ['websocket'],
@@ -55,6 +71,7 @@ export default function BluetoothScreen() {
 
     socket.current.on('sensor-data', (data) => {
       console.log('Socket.IO 수신:', data);
+      addLog('front_to_app', JSON.stringify(data));
       handleSocketMessage(data);
     });
 
@@ -68,27 +85,24 @@ export default function BluetoothScreen() {
     });
   };
 
-  // Socket 메시지 처리
   const handleSocketMessage = (data: any) => {
     if (connectedDevice) {
-
       const statusCommand = `S,${data?.mode},${data?.win},${data?.fan},${data?.hum},${data?.hit},${data?.glight},${data?.door},${data?.temp},${data?.humi},${data?.co2}\n`;
-  
+      addLog('app_to_watch', statusCommand);
       sendBluetoothCommand(statusCommand);
     }
   };
 
-  // Socket 메시지 전송
   const emitSocket = (event: string, data: any) => {
     if (socket.current?.connected) {
       socket.current.emit(event, data);
       console.log('Socket.IO 전송:', event, data);
+      addLog('app_to_front', `${event}: ${JSON.stringify(data)}`);
     } else {
       Alert.alert('오류', 'Socket이 연결되지 않았습니다');
     }
   };
 
-  // 블루투스 스캔
   const scanDevices = async () => {
     setScanning(true);
     try {
@@ -103,7 +117,6 @@ export default function BluetoothScreen() {
     }
   };
 
-  // 블루투스 연결
   const connectDevice = async (device: BluetoothDevice) => {
     try {
       if (connectedDevice) {
@@ -116,21 +129,18 @@ export default function BluetoothScreen() {
         setConnectedDevice(device);
         Alert.alert('성공', `${device.name}에 연결되었습니다`);
         
-        // 데이터 수신 리스너 - 블루투스에서 받은 데이터를 Socket으로 전송
         device.onDataReceived((data: any) => {
           console.log('블루투스 수신:', data?.data);
-          
           const receivedData = data?.data;
+          addLog('watch_to_app', receivedData);
           
-          // CMD로 시작하는 명령 파싱
           if (receivedData?.startsWith('CMD,')) {
             const parts = receivedData.split(',');
-            const key = parts[1]; // LIGHT, MODE 등
-            const value = parts[2]?.replace('\n', ''); // 1, 2 등
+            const key = parts[1];
+            const value = parts[2]?.replace('\n', '');
             
             console.log('파싱:', key, value);
             
-            // Socket으로 전송
             emitSocket('bluetooth', {
               device: device.name,
               command: 'CMD',
@@ -140,9 +150,7 @@ export default function BluetoothScreen() {
           }
         });
 
-        // 시간 동기화
         sendTimeSync(device);
-        
       }
     } catch (error) {
       console.error('연결 실패:', error);
@@ -150,7 +158,6 @@ export default function BluetoothScreen() {
     }
   };
 
-  // 블루투스 명령 전송
   const sendBluetoothCommand = async (data: any) => {
     if (!connectedDevice) {
       Alert.alert('오류', '연결된 기기가 없습니다');
@@ -165,7 +172,6 @@ export default function BluetoothScreen() {
     }
   };
 
-  // 시간 동기화
   const sendTimeSync = async (device: BluetoothDevice) => {
     const now = new Date();
     const timeString = `T,${now.getFullYear()},${now.getMonth()+1},${now.getDate()},${now.getHours()},${now.getMinutes()},${now.getSeconds()}\n`;
@@ -173,7 +179,6 @@ export default function BluetoothScreen() {
     console.log('시간 동기화:', timeString);
   };
 
-  // 연결 해제
   const disconnect = async () => {
     if (connectedDevice) {
       await connectedDevice.disconnect();
@@ -182,6 +187,23 @@ export default function BluetoothScreen() {
     }
   };
 
+  const getLogColor = (type: LogMessage['type']) => {
+    switch (type) {
+      case 'watch_to_app': return '#2196F3'; // 파랑
+      case 'app_to_front': return '#4CAF50'; // 초록
+      case 'front_to_app': return '#FF9800'; // 주황
+      case 'app_to_watch': return '#9C27B0'; // 보라
+    }
+  };
+
+  const getLogLabel = (type: LogMessage['type']) => {
+    switch (type) {
+      case 'watch_to_app': return '워치→앱';
+      case 'app_to_front': return '앱→프론트';
+      case 'front_to_app': return '프론트→앱';
+      case 'app_to_watch': return '앱→워치';
+    }
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -240,6 +262,35 @@ export default function BluetoothScreen() {
             </View>
           )}
         />
+      </View>
+
+      {/* 통신 로그 */}
+      <View style={styles.section}>
+        <View style={styles.logHeader}>
+          <Text style={styles.sectionTitle}>통신 로그</Text>
+          <Button title="지우기" onPress={() => setLogs([])} color="#666" />
+        </View>
+        
+        {logs.length === 0 ? (
+          <Text style={styles.emptyText}>로그가 없습니다</Text>
+        ) : (
+          <FlatList
+            data={logs}
+            keyExtractor={(item) => item.id}
+            scrollEnabled={false}
+            renderItem={({ item }) => (
+              <View style={styles.logItem}>
+                <View style={styles.logHeader2}>
+                  <View style={[styles.logBadge, { backgroundColor: getLogColor(item.type) }]}>
+                    <Text style={styles.logBadgeText}>{getLogLabel(item.type)}</Text>
+                  </View>
+                  <Text style={styles.logTime}>{item.timestamp}</Text>
+                </View>
+                <Text style={styles.logData}>{item.data}</Text>
+              </View>
+            )}
+          />
+        )}
       </View>
     </ScrollView>
   );
@@ -307,24 +358,49 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
-  commandButtons: {
-    gap: 8,
-  },
-  buttonSpacer: {
-    height: 8,
-  },
-  messageText: {
-    fontSize: 12,
-    fontFamily: 'monospace',
-    padding: 8,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 4,
-    marginBottom: 4,
-  },
   emptyText: {
     fontSize: 14,
     color: '#999',
     textAlign: 'center',
     padding: 16,
+  },
+  logHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  logItem: {
+    backgroundColor: '#fafafa',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ddd',
+  },
+  logHeader2: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  logBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  logBadgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  logTime: {
+    fontSize: 11,
+    color: '#666',
+  },
+  logData: {
+    fontSize: 13,
+    fontFamily: 'monospace',
+    color: '#333',
   },
 });
