@@ -153,15 +153,12 @@ socket.on('python', (data) => {
           
           // 파이썬 로그 예시: "✓ 벡터 저장 완료: /home/.../face_vectors/user123.pkl"
           // 정규식으로 "벡터 저장 완료:" 뒤에 있는 경로 부분을 잡아냅니다.
-          const match = resultBuffer.match(/벡터 저장 완료:\s*(.+)/);
 
-          if (match && match[1]) {
-            vectorPath = match[1].trim(); // 로그에서 추출한 실제 경로
-          } else {
+          
             // 만약 로그 파싱에 실패했다면, 요청받은 기본 경로와 ID로 추정치를 넣습니다.
             // (파이썬 쪽 저장 로직이 .pkl 이라고 가정)
             vectorPath = `/home/rlaaudwns/web/backend/src/python/face_vectors/${userId}.pkl`;
-          }
+          
 
           console.log(`📍 추출된 벡터 경로: ${vectorPath}`);
 
