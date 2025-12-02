@@ -136,35 +136,36 @@ export const Socketmain = () => {
     };
 
     const handleBlue = (payload: any) => {
+      const value = payload.value?.trim(); 
       if (payload.key=="MODE"){
-        if(payload.value == "0\r"){setModetype("sudong");}
-        else if(payload.value == "1\r"){setModetype("in");}
-        else if(payload.value == "2\r"){setModetype("zzz");}
-        else if(payload.value == "3\r"){setModetype("out");}
+        if(value == "0"){setModetype("sudong");}
+        else if(value == "1"){setModetype("in");}
+        else if(value == "2"){setModetype("zzz");}
+        else if(value == "3"){setModetype("out");}
       }
       else if (payload.key=="WIN"){
-        if(payload.value == "0\r"){setWin(0);}
-        else if(payload.value == "1\r"){setWin(1);}
+        if(value == "0"){setWin(0);}
+        else if(value == "1"){setWin(1);}
       }
       else if (payload.key=="FAN"){
-        if(payload.value == "0\r"){setFan(0);}
-        else if(payload.value == "1\r"){setFan(1);}
+        if(value == "0"){setFan(0);}
+        else if(value == "1"){setFan(1);}
       }
       else if (payload.key=="HUMID"){
-        if(payload.value == "0\r"){setHum(0);}
-        else if(payload.value == "1\r"){setHum(1);}
+        if(value == "0"){setHum(0);}
+        else if(value == "1"){setHum(1);}
       }
       else if (payload.key=="HEAT"){
-        if(payload.value == "0\r"){setHit(0);}
-        else if(payload.value == "1\r"){setHit(1);}
+        if(value == "0"){setHit(0);}
+        else if(value == "1"){setHit(1);}
       }
       else if (payload.key=="LIGHT"){
-        if(payload.value == "0\r"){setGlight(0);}
-        else if(payload.value == "1\r"){setGlight(1);}
+        if(value == "0"){setGlight(0);}
+        else if(value == "1"){setGlight(1);}
       }
       else if (payload.key=="DOOR"){
-        if(payload.value == "0\r"){setDoor(0);}
-        else if(payload.value == "1\r"){setDoor(1);}
+        if(value == "0"){setDoor(0);}
+        else if(value == "1"){setDoor(1);}
       }
 
     }
