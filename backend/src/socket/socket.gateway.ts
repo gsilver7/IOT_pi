@@ -217,6 +217,25 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // ✅ 업데이트된 전체 상태도 브로드캐스트
     this.server.emit('control-state', this.controlState);
   }
+  @SubscribeMessage('python-result')
+  handledu(
+    @MessageBody() payload: AduDataDto,
+    @ConnectedSocket() client: Socket,
+  ): void {
+
+    const combinedData = {
+    win: this.controlState.win,
+    fan: this.controlState.fan,
+    hit: this.controlState.hit,
+    hum: this.controlState.hum,
+    door: 1,
+    mode: this.controlState.mode,
+    glight: this.controlState.glight,
+  };
+    client.broadcast.emit('sensor-data', combinedData);
+    
+  }
+
 
   @SubscribeMessage('adu-data')
   handleAdu(
