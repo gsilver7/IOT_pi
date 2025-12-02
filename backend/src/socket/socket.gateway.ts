@@ -227,7 +227,22 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(
       `온도: ${payload.temp}, 습도: ${payload.humi}, co2: ${payload.co2}, 조도: ${payload.light}`,
     );
+    const combinedData = {
+    temp: payload.temp,
+    humi: payload.humi,
+    co2: payload.co2,
+    light: payload.light,
+    win: this.controlState.win,
+    fan: this.controlState.fan,
+    hit: this.controlState.hit,
+    hum: this.controlState.hum,
+    door: this.controlState.door,
+    mode: this.controlState.mode,
+    glight: this.controlState.glight,
+  };
     client.broadcast.emit('adu-data', payload);
+    client.broadcast.emit('sensor-data', combinedData);
+    
   }
 
   @OnEvent('tempdata')
