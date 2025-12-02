@@ -32,16 +32,21 @@ interface ControlMessage {
 
 export const Socketmain = () => {
 
-  const { modetype, triggerStateB } = useGlobalState();
+  const { modetype,setModetype, triggerStateB } = useGlobalState();
 
   const socket = useSocket();
   const {
     hlight,
     glight,
+    setGlight,
     win,
+    setWin,
     hit,
+    setHit,
     hum,
+    setHum,
     fan,
+    setFan,
     door,
     setDoor,
     setServerTime,
@@ -113,7 +118,56 @@ export const Socketmain = () => {
       setCo2(payload.co2);
 
       setLight(payload.light);
+
+      socket.emit('sensor-data', {
+        temp: payload.temp,
+        humi: payload.humi,
+        co2: payload.co2,
+        light: payload.light,
+        win: win,
+        fan: fan,
+        hit:hit,
+        hum:hum,
+        door:door,
+        mode:modetype,
+        glight:glight,
+
+      });
     };
+
+    const handleBlue = (payload: any) => {
+      if (payload.key=="MODE"){
+        if(payload.value == 0){setModetype("sudong");}
+        else if(payload.value == 1){setModetype("in");}
+        else if(payload.value == 2){setModetype("zzz");}
+        else if(payload.value == 3){setModetype("out");}
+      }
+      else if (payload.key=="WIN"){
+        if(payload.value == 0){setWin(0);}
+        else if(payload.value == 1){setWin(1);}
+      }
+      else if (payload.key=="FAN"){
+        if(payload.value == 0){setFan(0);}
+        else if(payload.value == 1){setFan(1);}
+      }
+      else if (payload.key=="HUMID"){
+        if(payload.value == 0){setHum(0);}
+        else if(payload.value == 1){setHum(1);}
+      }
+      else if (payload.key=="HEAT"){
+        if(payload.value == 0){setHit(0);}
+        else if(payload.value == 1){setHit(1);}
+      }
+      else if (payload.key=="LIGHT"){
+        if(payload.value == 0){setGlight(0);}
+        else if(payload.value == 1){setGlight(1);}
+      }
+      else if (payload.key=="DOOR"){
+        if(payload.value == 0){setDoor(0);}
+        else if(payload.value == 1){setDoor(1);}
+      }
+
+    }
 
   const handlemacData = (data:MacMatchDto) => {
     if (data.matched==true) {
@@ -131,6 +185,7 @@ export const Socketmain = () => {
     socket.on("adu-data", handleData);
     socket.on("mac", handlemacData);
     socket.on("door-status", handleDoor);
+    socket.on("bluetooth", handleBlue);
     
     // 클린업 (언마운트 시 리스너 제거)
     return () => {
@@ -141,6 +196,7 @@ export const Socketmain = () => {
       socket.off("adu-data", handleData);
       socket.off("mac", handlemacData);
       socket.off("door-status", handleDoor);
+      socket.off("bluetooth", handleBlue);
     };
   }, [socket,triggerStateB]);
 
