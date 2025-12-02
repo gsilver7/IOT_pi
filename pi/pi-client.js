@@ -437,11 +437,11 @@ function startWebcamStreaming() {
   // ffmpeg로 웹캠 캡처
   ffmpegProcess = spawn('ffmpeg', [
     '-f', 'v4l2',
-    '-framerate', '15',
-    '-video_size', '640x480',
+    '-framerate', '5',
+    '-video_size', '480x360',
     '-i', '/dev/video0',
     '-f', 'mjpeg',
-    '-q:v', '5',
+    '-q:v', '8',
     '-'
   ]);
 
