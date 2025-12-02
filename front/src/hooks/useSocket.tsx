@@ -10,7 +10,7 @@ const useSocket = () => {
 
   useEffect(() => {
     const newSocket: Socket = io(SOCKET_URL, {
-      transports: ["websocket", "polling"],
+      transports: ["websocket"],
       timeout: 10000,
       autoConnect: true,
       forceNew: false,
