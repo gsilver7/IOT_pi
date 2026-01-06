@@ -3,8 +3,7 @@
 IOT smart home을 주제로 은상을 수상하였습니다.
 
 구조<br>
-
-
+<img width="1585" height="946" alt="if" src="https://github.com/user-attachments/assets/71ac2dde-2b08-4810-a9aa-8816e3b6554f" />
 
 
 
