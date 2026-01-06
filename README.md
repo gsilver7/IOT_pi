@@ -5,6 +5,46 @@ IOT smart home을 주제로 은상을 수상하였습니다.
 구조<br>
 <img width="1585" height="946" alt="if" src="https://github.com/user-attachments/assets/71ac2dde-2b08-4810-a9aa-8816e3b6554f" />
 
+1. aws
+   프로젝트의 주요 모듈들이 올라간 곳입니다. redis, proxy용 nginx, frontend용 nginx, nest.js 로 총 네개의 컨테이너를 docker-compose로 띄웠습니다.
+   해당 컨테이너들은 aws EC2에 배포되었고 추가로 데이터베이스를 위해 aws RDB 서비스를 이용했습니다.
+   1) frontend
+      react로 제작되었고 RN webview를 위해 모바일 대응을 하였습니다. 랜더링 될 때 backend와 소켓통신을 연결하여 센서 정보, 스트리밍 정보, 제어 신호 등을
+      주고받게 하였습니다. 
+   2) backend
+      nest.js로 제작하였고 기상청에서 날씨 api를 받아오는 모듈, 메일 인증을 수행하는 모듈, 스트리밍 모듈, 소켓 통신 모듈 등이 존재합니다.
+   3) proxy
+      frontend와 backend 앞단에 배치해 http와 https 사이의 변환을 수행하고 서버 뒷단의 부하를 줄였습니다.
+      또한 frontend와 backend간의 주요 통신에는 소켓통신을 사용해 최초 연결 이후에는 proxy를 경유하지 않게 설계하여 오버헤드를 줄였습니다.
+   4) redis
+      회원들의 token 정보들을 빠르게 주기 위해 두었습니다.
+   5) RDS
+      mysql로 설정하였고 이름, 이메일, 비밀번호, 얼굴벡터 주소, 블루투스 mac주소 등의 유저 정보를 저장하는 테이블, 메일인증 번호를 저장하는 테이블이 존재합니다.
+      비밀번호는 backend 단에서 해싱해서 저장하도록 하였습니다.
+      얼굴벡터는 저장하기에는 너무 커서 라즈베리파이에 파일 형식으로 저장하고 저장된 경로를 저장하게 했습니다.
+
+2. app
+   어플이 설치된 모바일 환경으로 react native로 개발하여 expo로 테스트 한뒤 android studio와 jdk를 이용해 apk로 빌드하여 배포했습니다.
+   1) webview component
+      frontend의 웹 화면을 띄우는 컴포넌트입니다. 모바일 대응이 되어 네이티브 앱처럼 동작합니다.
+   2) blutooth component
+      스마트워치의 블루투스 모듈과 블루투스 통신을 수행하는 컴포넌트입니다.
+
+3. Pi
+   aws에 아두이노의 정보를 aws에 전달하고 aws의 제어신호를 아두이노에 전달하는 역할을 수행하는 곳입니다.
+   사전에 등록된 휴대폰의 핫스팟에 연결되어 인터넷에 접속하고 접속에 성공하면 aws와 소켓을 연결합니다.
+   usb 포트로 웹캠, 아두이노와 물리적으로 연결되어 시리얼 통신을 수행합니다.
+   동작하는 모듈은 node.js로 작성되었고 pm2을 사용해 백그라운드에서 동작하고 전원 공급시 스스로 켜지게 설계습니다.
+   1) serial module
+      아두이노, 웹캠과 시리얼 통신을 수행하는 모듈로 동시에 aws backend와 소켓 연결로 데이터를 주고받습니다.
+      또한 특정 이벤트 발생시 python module을 호출하고 내부적으로 bluetooth module의 동작을 포함합니다.
+   2) bluetooth module
+      주변 bluetooth 장치들을 주기적으로 감시하며 aws RDS 에 저장된 bluetooth mac 주소들을 읽어와서 겹치는 주소가 있다면
+      수동 모드가 아닐 시 모드를 외출 모드로 바꾸게 합니다.
+   3) python module
+      backend에서 얼굴 벡터 비교 요청이나 얼굴벡터 저장 요청이 왔을 때 수행되는 모듈입니다.
+      python 가상머신 안에서 동작하며 openCV와 face_recognization 라이브러리를 사용하였습니다.   
+
 
 
 시행착오들<br>
